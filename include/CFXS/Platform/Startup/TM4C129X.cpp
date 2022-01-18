@@ -114,7 +114,7 @@ __interrupt __noreturn __used void __Reset() {
 ////////////////////////////////////////////////////////////////////////////////////////
 // Overcomplicated Default Vector Table
 
-__vector_table __used const CFXS::Cortex_M::VectorTable_TM4C129X<&__STACK_BASE__, __Reset, __isr_Default> g_VectorTable = []() constexpr {
+__vector_table const CFXS::Cortex_M::VectorTable_TM4C129X<&__STACK_BASE__, __Reset, __isr_Default> g_VectorTable = []() constexpr {
     std::remove_cv<decltype(g_VectorTable)>::type vt;
     vt.isr_HardFault = __isr_HardFault;
     vt.isr_NMI       = __isr_NMI;
