@@ -1,25 +1,26 @@
 // ---------------------------------------------------------------------
 // CFXS Framework Platform Module <https://github.com/CFXS/CFXS-Platform>
 // Copyright (C) 2022 | CFXS / Rihards Veips
-// 
+//
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
 // the Free Software Foundation, either version 3 of the License, or
 // (at your option) any later version.
-// 
+//
 // This program is distributed in the hope that it will be useful,
 // but WITHOUT ANY WARRANTY; without even the implied warranty of
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
 // GNU General Public License for more details.
-// 
+//
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>
 // ---------------------------------------------------------------------
 // [CFXS] //
 #include <type_traits>
-#include <driverlib_includes.hpp>
+#include <CFXS/Base/Debug.hpp>
 #include <CFXS/Base/Cortex_M/VectorTable_TM4C129X.hpp>
 #include <CFXS/Platform/CPU.hpp>
+#include <driverlib/sysctl.h>
 
 // Empty handler for Tiva lib ASSERT
 extern "C" __weak void __error__(char *pcFilename, uint32_t ui32Line) {
@@ -49,23 +50,9 @@ __weak __used void __cfxs_entry_point() {
 }
 
 /////////////////////////////////////////////////////////////
-// Default Handlers
 
-__interrupt void __isr_NMI(void) {
-    asm volatile("bkpt");
-}
-
-__interrupt void __isr_HardFault(void) {
-    asm volatile("bkpt");
-}
-
-__interrupt void __isr_Default(void) {
-    asm volatile("bkpt");
-}
-
-__interrupt __noreturn __used void __Reset() {
-    CFXS::CPU::DisableInterrupts();
-
+// Default before data init
+__used __weak void __cfxs_init() {
     // Disable all configurable interrupts
     HWREG(NVIC_DIS0) = 0xFFFFFFFF;
     HWREG(NVIC_DIS1) = 0xFFFFFFFF;
@@ -78,7 +65,10 @@ __interrupt __noreturn __used void __Reset() {
 
     // Configure clock (for fast init)
     SysCtlClockFreqSet((SYSCTL_XTAL_25MHZ | SYSCTL_OSC_MAIN | SYSCTL_USE_PLL | SYSCTL_CFG_VCO_480), CFXS::CPU::CLOCK_FREQUENCY);
+}
 
+// Default data init
+__used __weak void __cfxs_data_init() {
     // const init
     auto pui32Src = &__TEXT_END__;
     for (auto pui32Dest = &__DATA_START__; pui32Dest < &__DATA_END__;) {
@@ -103,10 +93,17 @@ __interrupt __noreturn __used void __Reset() {
     for (auto i = 0; i < __INIT_ARRAY_END__ - __INIT_ARRAY_START__; i++) {
         __INIT_ARRAY_START__[i]();
     }
+}
 
-    __cfxs_entry_point();
+// Startup entry point
+__interrupt __noreturn __used void __cfxs_reset() {
+    CFXS::CPU::DisableInterrupts();
 
-    asm volatile("bkpt");
+    __cfxs_init();        // Disable interrupt bits + configure clock
+    __cfxs_data_init();   // Const/constructor init
+    __cfxs_entry_point(); // Go to main
+
+    CFXS_BKPT();
 
     CFXS::CPU::Reset();
 }
@@ -114,10 +111,26 @@ __interrupt __noreturn __used void __Reset() {
 ////////////////////////////////////////////////////////////////////////////////////////
 // Overcomplicated Default Vector Table
 
-__vector_table const CFXS::Cortex_M::VectorTable_TM4C129X<&__STACK_BASE__, __Reset, __isr_Default> g_VectorTable = []() constexpr {
+__interrupt __weak void __cfxs_isr_NMI(void) {
+    CFXS_BKPT();
+    CFXS::CPU::Reset();
+}
+
+__interrupt __weak void __cfxs_isr_HardFault(void) {
+    CFXS_BKPT();
+    CFXS::CPU::Reset();
+}
+
+__interrupt __weak void __cfxs_isr_Unhandled(void) {
+    CFXS_BKPT();
+    CFXS::CPU::Reset();
+}
+
+__vector_table const CFXS::Cortex_M::VectorTable_TM4C129X<&__STACK_BASE__, __cfxs_reset, __cfxs_isr_Unhandled> g_VectorTable =
+    []() constexpr {
     std::remove_cv<decltype(g_VectorTable)>::type vt;
-    vt.isr_HardFault = __isr_HardFault;
-    vt.isr_NMI       = __isr_NMI;
+    vt.isr_HardFault = __cfxs_isr_HardFault;
+    vt.isr_NMI       = __cfxs_isr_NMI;
     return vt;
 }
 ();

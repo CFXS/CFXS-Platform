@@ -1,2 +1,0 @@
-Files in this folder are supposed to be included from the main project
-(startup code can not be built automatically because this is a .a lib)

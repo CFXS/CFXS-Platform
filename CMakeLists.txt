@@ -18,6 +18,12 @@ add_library(CFXS_Platform ${sources})
 target_include_directories(CFXS_Platform PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/include)
 target_include_directories(CFXS_Platform PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/src)
 
+if(${CFXS_STARTUP_PLATFORM} STREQUAL "TM4C129X")
+  target_sources(${CMAKE_PROJECT_NAME} PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}/private/Startup/TM4C129X.cpp")
+else()
+  message(FATAL_ERROR "CFXS-Platform unsupported CFXS_STARTUP_PLATFORM")
+endif()
+
 target_precompile_headers(
   CFXS_Platform
   PUBLIC
