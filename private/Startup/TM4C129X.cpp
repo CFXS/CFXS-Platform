@@ -103,7 +103,7 @@ __interrupt __noreturn __used void __cfxs_reset() {
     __cfxs_data_init();   // Const/constructor init
     __cfxs_entry_point(); // Go to main
 
-    CFXS_BKPT();
+    CFXS_BREAK();
 
     CFXS::CPU::Reset();
 }
@@ -112,17 +112,17 @@ __interrupt __noreturn __used void __cfxs_reset() {
 // Overcomplicated Default Vector Table
 
 __interrupt __weak void __cfxs_isr_NMI(void) {
-    CFXS_BKPT();
+    CFXS_BREAK();
     CFXS::CPU::Reset();
 }
 
 __interrupt __weak void __cfxs_isr_HardFault(void) {
-    CFXS_BKPT();
+    CFXS_BREAK();
     CFXS::CPU::Reset();
 }
 
 __interrupt __weak void __cfxs_isr_Unhandled(void) {
-    CFXS_BKPT();
+    CFXS_BREAK();
     CFXS::CPU::Reset();
 }
 
