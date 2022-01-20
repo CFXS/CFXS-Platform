@@ -100,9 +100,9 @@ __used __weak void __cfxs_data_init() {
 __interrupt __noreturn __used void __cfxs_reset() {
     CFXS::CPU::DisableInterrupts();
 
-    __cfxs_init();        // Disable interrupt bits + configure clock
-    __cfxs_data_init();   // Const/constructor init
-    __cfxs_entry_point(); // Go to main
+    __cfxs_init();        // disable interrupt bits + configure clock
+    __cfxs_data_init();   // const/constructor init
+    __cfxs_entry_point(); // go to main
 
     CFXS_BREAK();
 
