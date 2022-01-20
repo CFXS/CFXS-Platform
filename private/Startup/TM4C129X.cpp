@@ -23,7 +23,7 @@
 #include <driverlib/sysctl.h>
 
 // Empty handler for Tiva lib ASSERT
-extern "C" __weak void __error__(char *pcFilename, uint32_t ui32Line) {
+extern "C" __weak void __error__(char* pcFilename, uint32_t ui32Line) {
     asm volatile("bkpt");
 }
 
@@ -31,8 +31,9 @@ extern "C" __weak void __error__(char *pcFilename, uint32_t ui32Line) {
 // Externals
 extern const uint32_t __STACK_BASE__;
 extern const uint32_t __TEXT_END__;
-extern uint32_t __DATA_START__;
+extern const uint32_t __DATA_START__;
 extern const uint32_t __DATA_END__;
+extern const uint32_t __CONST_INIT_DATA_BASE__;
 extern const uint32_t __BSS_START__;
 extern const uint32_t __BSS_END__;
 extern void (*const __PREINIT_ARRAY_START__[])(void);
@@ -45,7 +46,7 @@ extern void (*const __FINI_ARRAY_END__[])(void);
 // Default startup
 
 __weak __used void __cfxs_entry_point() {
-    extern int main();
+    extern void main();
     main();
 }
 
@@ -70,8 +71,8 @@ __used __weak void __cfxs_init() {
 // Default data init
 __used __weak void __cfxs_data_init() {
     // const init
-    auto pui32Src = &__TEXT_END__;
-    for (auto pui32Dest = &__DATA_START__; pui32Dest < &__DATA_END__;) {
+    auto pui32Src = &__CONST_INIT_DATA_BASE__;
+    for (uint32_t* pui32Dest = (uint32_t*)&__DATA_START__; pui32Dest < &__DATA_END__;) {
         *pui32Dest++ = *pui32Src++;
     }
 
