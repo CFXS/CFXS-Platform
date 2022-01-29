@@ -18,35 +18,37 @@
 // [CFXS] //
 #include <inc/hw_nvic.h>
 #include <inc/hw_types.h>
+#include "Cortex_M.hpp"
+
 namespace CFXS::CPU {
 
-    static constexpr size_t CLOCK_FREQUENCY = CFXS_CPU_CLOCK_FREQUENCY;
-    static constexpr size_t CYCLES_PER_MS   = CLOCK_FREQUENCY / 1000;
-    static constexpr size_t CYCLES_PER_USEC = CLOCK_FREQUENCY / 1000000;
+    static constexpr size_t CLOCK_FREQUENCY      = CFXS_CPU_CLOCK_FREQUENCY;
+    static constexpr size_t CYCLES_PER_MS        = CLOCK_FREQUENCY / 1000;
+    static constexpr size_t CYCLES_PER_USEC      = CLOCK_FREQUENCY / 1000000;
+    static constexpr float CYCLES_PER_MS_FLOAT   = CLOCK_FREQUENCY / 1000.0f;
+    static constexpr float CYCLES_PER_USEC_FLOAT = CLOCK_FREQUENCY / 1000000.0f;
 
     /// Reset CPU
-    static inline __noreturn void Reset() {
+    static __always_inline __noreturn void Reset() {
         HWREG(NVIC_APINT) = NVIC_APINT_VECTKEY | NVIC_APINT_SYSRESETREQ;
         while (1 < 2) {
         }
     }
 
     /// Enable global interrupts
-    static inline void EnableInterrupts() {
-        asm volatile("cpsie i" : : : "memory");
+    static __always_inline void EnableInterrupts() {
+        asm("cpsie i" ::: "memory");
     }
 
     /// Disable global interrupts
-    static inline void DisableInterrupts() {
-        asm volatile("cpsid i" : : : "memory");
+    static __always_inline void DisableInterrupts() {
+        asm("cpsid i" ::: "memory");
     }
 
     /// Are global interrupts enabled
     /// \returns true if global interrupts are enabled
-    static inline bool AreInterruptsEnabled() {
-        uint32_t primaskVal;
-        asm volatile("mrs %0, primask" : "=r"(primaskVal));
-        return primaskVal;
+    static __always_inline bool AreInterruptsEnabled() {
+        return CFXS::CPU::__Get_PRIMASK();
     }
 
 } // namespace CFXS::CPU

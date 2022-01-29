@@ -18,6 +18,8 @@
 // [CFXS] //
 #pragma once
 
-#ifdef CFXS_PLATFORM_TM4C
-    #include "_CPU/TM4C.hpp"
-#endif
+namespace CFXS {
+
+    class MemoryManager {};
+
+} // namespace CFXS

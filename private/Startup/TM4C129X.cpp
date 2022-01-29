@@ -1,17 +1,17 @@
 // ---------------------------------------------------------------------
 // CFXS Framework Platform Module <https://github.com/CFXS/CFXS-Platform>
 // Copyright (C) 2022 | CFXS / Rihards Veips
-//
+// 
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
 // the Free Software Foundation, either version 3 of the License, or
 // (at your option) any later version.
-//
+// 
 // This program is distributed in the hope that it will be useful,
 // but WITHOUT ANY WARRANTY; without even the implied warranty of
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
 // GNU General Public License for more details.
-//
+// 
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>
 // ---------------------------------------------------------------------
@@ -29,12 +29,16 @@ extern "C" __weak void __error__(char* pcFilename, uint32_t ui32Line) {
 
 /////////////////////////////////////////////////////////////
 // Externals
-extern const uint32_t __STACK_BASE__;
-extern const uint32_t __TEXT_END__;
-extern const uint32_t __DATA_START__;
-extern const uint32_t __DATA_END__;
-extern const uint32_t __CONST_INIT_DATA_BASE__;
-extern const uint32_t __BSS_START__;
+extern const uint32_t __STACK_BASE__;            // Stack base is higher in memory than stack end
+extern const uint32_t __STACK_END__;             // Stack limit (start of heap)
+extern const uint32_t __HEAP_BASE__;             // Heap base
+extern const uint32_t __HEAP_END__;              // End of heap (should be end of RAM)
+extern const uint32_t __TEXT_START__;            // Start of ROM data
+extern const uint32_t __TEXT_END__;              // End of ROM data
+extern const uint32_t __DATA_START__;            // Const init target base
+extern const uint32_t __DATA_END__;              // Const init target end
+extern const uint32_t __CONST_INIT_DATA_START__; // Location of const init source data in flash
+extern const uint32_t __BSS_START__;             // Zero init data
 extern const uint32_t __BSS_END__;
 extern void (*const __PREINIT_ARRAY_START__[])(void);
 extern void (*const __PREINIT_ARRAY_END__[])(void);
@@ -47,6 +51,18 @@ extern void (*const __FINI_ARRAY_END__[])(void);
 
 __weak __used void __cfxs_entry_point() {
     extern void main();
+
+    size_t stackSize   = (size_t)&__STACK_BASE__ - (size_t)&__STACK_END__;
+    size_t heapSize    = (size_t)&__HEAP_END__ - (size_t)&__HEAP_BASE__;
+    size_t ramDataSize = (size_t)&__BSS_END__ - (size_t)&__DATA_START__;
+    size_t romDataSize = (size_t)&__TEXT_END__ - (size_t)&__TEXT_START__;
+
+    CFXS_printf("[CFXS-Platform TM4C129X]\n");
+    CFXS_printf(" - ROM Data:  %3ukB\t[0x%08X - 0x%08X]\n", romDataSize / 1024, (size_t)&__TEXT_START__, (size_t)&__TEXT_END__);
+    CFXS_printf(" - RAM Data:  %3ukB\t[0x%08X - 0x%08X]\n", ramDataSize / 1024, (size_t)&__DATA_START__, (size_t)&__BSS_END__);
+    CFXS_printf(" - Stack:     %3ukB\t[0x%08X - 0x%08X]\n", stackSize / 1024, (size_t)&__STACK_END__, (size_t)&__STACK_BASE__);
+    CFXS_printf(" - Heap:      %3ukB\t[0x%08X - 0x%08X]\n", heapSize / 1024, (size_t)&__HEAP_BASE__, (size_t)&__HEAP_END__);
+
     main();
 }
 
@@ -71,7 +87,7 @@ __used __weak void __cfxs_init() {
 // Default data init
 __used __weak void __cfxs_data_init() {
     // const init
-    auto pui32Src = &__CONST_INIT_DATA_BASE__;
+    auto pui32Src = &__CONST_INIT_DATA_START__;
     for (uint32_t* pui32Dest = (uint32_t*)&__DATA_START__; pui32Dest < &__DATA_END__;) {
         *pui32Dest++ = *pui32Src++;
     }
@@ -96,8 +112,8 @@ __used __weak void __cfxs_data_init() {
     }
 }
 
-// Startup entry point
-__interrupt __noreturn __used void __cfxs_reset() {
+// Startup entry point (extern "C" for LinkerScript ENTRY)
+extern "C" __interrupt __noreturn __used void __cfxs_reset() {
     CFXS::CPU::DisableInterrupts();
 
     __cfxs_init();        // disable interrupt bits + configure clock

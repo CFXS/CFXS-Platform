@@ -16,8 +16,20 @@
 // along with this program.  If not, see <http://www.gnu.org/licenses/>
 // ---------------------------------------------------------------------
 // [CFXS] //
-#pragma once
+#include <CFXS/Base/Debug.hpp>
 
-#ifdef CFXS_PLATFORM_TM4C
-    #include "_CPU/TM4C.hpp"
-#endif
+extern "C" void* dlmalloc(size_t bytes);
+extern "C" void dlfree(void* mem);
+
+void* operator new(size_t size) {
+    void* p = dlmalloc(size);
+    return p;
+}
+
+void operator delete(void* p) {
+    dlfree(p);
+}
+
+void operator delete(void* p, size_t s) {
+    dlfree(p);
+}

@@ -18,6 +18,35 @@
 // [CFXS] //
 #pragma once
 
-#ifdef CFXS_PLATFORM_TM4C
-    #include "_CPU/TM4C.hpp"
-#endif
+namespace CFXS::CPU {
+
+    /// Read PRIMASK register
+    static __always_inline bool __Get_PRIMASK() {
+        uint32_t val;
+        asm volatile("mrs %0, primask" : "=r"(val));
+        return val;
+    }
+
+    /// Read BASEPRI register
+    static __always_inline bool __Get_BASEPRI() {
+        uint32_t val;
+        asm volatile("mrs %0, basepri" : "=r"(val));
+        return val;
+    }
+
+    /// Count trailing zeros
+    static __always_inline uint32_t __CTZ(uint32_t x) {
+        uint32_t res = 0;
+        asm("rbit %[dest], %[val]" : [dest] "=r"(res) : [val] "r"(x));
+        asm("clz %[dest], %[val]" : [dest] "=r"(res) : [val] "r"(res));
+        return res;
+    }
+
+    /// Count leading zeros
+    static __always_inline uint32_t __CLZ(uint32_t x) {
+        uint32_t res = 0;
+        asm("clz %[dest], %[val]" : [dest] "=r"(res) : [val] "r"(res));
+        return res;
+    }
+
+} // namespace CFXS::CPU
