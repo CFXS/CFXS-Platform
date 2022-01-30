@@ -16,6 +16,9 @@
 
 // clang-format off
 
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Warray-bounds"
+
 #include <stdint.h>
 #include <stddef.h>
 #include <CFXS/Platform/CPU.hpp>
@@ -33,11 +36,8 @@ extern "C" {
 
 ///////////////////////////////
 #include <CFXS/Base/Debug.hpp>
-// CFXS Config
-extern const uint32_t __HEAP_BASE__;
-extern const uint32_t __HEAP_END__;
-
 #define MSPACES              1
+#define ONLY_MSPACES         1
 #define USE_LOCKS            0
 #define HAVE_MORECORE        0
 #define MORECORE_CONTIGUOUS  0
@@ -50,9 +50,11 @@ extern const uint32_t __HEAP_END__;
 #endif
 
 #if CFXS_DLMALLOC_ERROR_PRINT == 1
-#define MALLOC_FAILURE_ACTION(reason) CFXS_ERROR("dlmalloc %s", reason)
+#define MALLOC_FAILURE_ACTION(reason) {CFXS_ERROR("dlmalloc %s", reason);}
+#define CORRUPTION_ERROR_ACTION(M) {CFXS_ERROR("dlmalloc corrupted heap (mstate = 0x%p)", M);}
 #else
 #define MALLOC_FAILURE_ACTION(reason)
+#define CORRUPTION_ERROR_ACTION(M)
 #endif
 ///////////////////////////////
 
@@ -3963,131 +3965,6 @@ static void add_segment(mstate m, char* tbase, size_t tsize, flag_t mmapped) {
 
 /* -------------------------- System allocation -------------------------- */
 
-/* Get memory from system using MORECORE or MMAP */
-static void* sys_alloc(mstate m, size_t nb) {
-    char* tbase      = CMFAIL;
-    size_t tsize     = 0;
-    flag_t mmap_flag = 0;
-    size_t asize; /* allocation size */
-
-    ensure_initialization();
-
-    /* Directly map large chunks, but only if already initialized */
-    if (use_mmap(m) && nb >= mparams.mmap_threshold && m->topsize != 0) {
-        void* mem = mmap_alloc(m, nb);
-        if (mem != 0)
-            return mem;
-    }
-
-    asize = granularity_align(nb + SYS_ALLOC_PADDING);
-    if (asize <= nb)
-        return 0; /* wraparound */
-    if (m->footprint_limit != 0) {
-        size_t fp = m->footprint + asize;
-        if (fp <= m->footprint || fp > m->footprint_limit)
-            return 0;
-    }
-
-    /*
-    Try getting memory in any of three ways (in most-preferred to
-    least-preferred order):
-    1. A call to MORECORE that can normally contiguously extend memory.
-       (disabled if not MORECORE_CONTIGUOUS or not HAVE_MORECORE or
-       or main space is mmapped or a previous contiguous call failed)
-    2. A call to MMAP new space (disabled if not HAVE_MMAP).
-       Note that under the default settings, if MORECORE is unable to
-       fulfill a request, and HAVE_MMAP is true, then mmap is
-       used as a noncontiguous system allocator. This is a useful backup
-       strategy for systems with holes in address spaces -- in this case
-       sbrk cannot contiguously expand the heap, but mmap may be able to
-       find space.
-    3. A call to MORECORE that cannot usually contiguously extend memory.
-       (disabled if not HAVE_MORECORE)
-
-   In all cases, we need to request enough bytes from system to ensure
-   we can malloc nb bytes upon success, so pad with enough space for
-   top_foot, plus alignment-pad to make sure we don't lose bytes if
-   not on boundary, and round this up to a granularity unit.
-  */
-
-    // tbase
-    // tsize
-
-    tbase = (char*)&__HEAP_BASE__;
-    tsize = ((size_t)&__HEAP_END__ - (size_t)&__HEAP_BASE__);
-    while(((size_t)tbase) & 3) { // align to 4
-        tbase++;
-        tsize--;
-    }
-
-    if (tbase != CMFAIL) {
-        if ((m->footprint += tsize) > m->max_footprint)
-            m->max_footprint = m->footprint;
-
-        if (!is_initialized(m)) { /* first-time initialization */
-            if (m->least_addr == 0 || tbase < m->least_addr)
-                m->least_addr = tbase;
-            m->seg.base       = tbase;
-            m->seg.size       = tsize;
-            m->seg.sflags     = mmap_flag;
-            m->magic          = mparams.magic;
-            m->release_checks = MAX_RELEASE_CHECK_RATE;
-            init_bins(m);
-#if !ONLY_MSPACES
-            if (is_global(m))
-                init_top(m, (mchunkptr)tbase, tsize - TOP_FOOT_SIZE);
-            else
-#endif
-            {
-                /* Offset top by embedded malloc_state */
-                mchunkptr mn = next_chunk(mem2chunk(m));
-                init_top(m, mn, (size_t)((tbase + tsize) - (char*)mn) - TOP_FOOT_SIZE);
-            }
-        }
-
-        else {
-            /* Try to merge with an existing segment */
-            msegmentptr sp = &m->seg;
-            /* Only consider most recent segment if traversal suppressed */
-            while (sp != 0 && tbase != sp->base + sp->size)
-                sp = (NO_SEGMENT_TRAVERSAL) ? 0 : sp->next;
-            if (sp != 0 && !is_extern_segment(sp) && (sp->sflags & USE_MMAP_BIT) == mmap_flag && segment_holds(sp, m->top)) { /* append */
-                sp->size += tsize;
-                init_top(m, m->top, m->topsize + tsize);
-            } else {
-                if (tbase < m->least_addr)
-                    m->least_addr = tbase;
-                sp = &m->seg;
-                while (sp != 0 && sp->base != tbase + tsize)
-                    sp = (NO_SEGMENT_TRAVERSAL) ? 0 : sp->next;
-                if (sp != 0 && !is_extern_segment(sp) && (sp->sflags & USE_MMAP_BIT) == mmap_flag) {
-                    char* oldbase = sp->base;
-                    sp->base      = tbase;
-                    sp->size += tsize;
-                    return prepend_alloc(m, tbase, oldbase, nb);
-                } else
-                    add_segment(m, tbase, tsize, mmap_flag);
-            }
-        }
-
-        if (nb < m->topsize) { /* Allocate from new or extended top space */
-            size_t rsize = m->topsize -= nb;
-            mchunkptr p  = m->top;
-            mchunkptr r = m->top = chunk_plus_offset(p, nb);
-            r->head              = rsize | PINUSE_BIT;
-            set_size_and_pinuse_of_inuse_chunk(m, p, nb);
-            check_top_chunk(m, m->top);
-            check_malloced_chunk(m, chunk2mem(p), nb);
-            return chunk2mem(p);
-        }
-    }
-
-    MALLOC_FAILURE_ACTION("out of memory");
-    return 0;
-}
-
-/* -----------------------  system deallocation -------------------------- */
-
 /* Unmap and unlink any mmapped segments that don't contain used chunks */
 static size_t release_unused_segments(mstate m) {
     size_t released  = 0;
@@ -5353,7 +5230,9 @@ void* mspace_malloc(mspace msp, size_t bytes) {
             goto postaction;
         }
 
-        mem = sys_alloc(ms, nb);
+        // CFXSMOD: sys_alloc removed
+        // mem = sys_alloc(ms, nb);
+        mem = nullptr;
 
     postaction:
         POSTACTION(ms);
@@ -6012,5 +5891,7 @@ History:
 #ifdef __cplusplus
 }
 #endif
+
+#pragma GCC diagnostic pop
 
 // clang-format on

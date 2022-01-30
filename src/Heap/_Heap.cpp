@@ -30,8 +30,10 @@ namespace CFXS {
     /// Allocate block of memory
     /// \param size bytes to allocate
     void* Heap::Allocate(size_t size) {
+#ifdef CFXS_HEAP_CHECK_LOCK
         CFXS_ASSERT(!m_Locked, "Heap(%s): locked :(", GetLabel());
         m_Locked = true;
+#endif
 
         size += 4;
         if (auto ptr = mspace_malloc(GetHandle(), size)) {
@@ -40,20 +42,26 @@ namespace CFXS {
             if (m_UsedBytes > m_MaxUsedBytes)
                 m_MaxUsedBytes = m_UsedBytes;
             *(uint32_t*)ptr = size;
-            m_Locked        = false;
+#ifdef CFXS_HEAP_CHECK_LOCK
+            m_Locked = false;
+#endif
             return (uint32_t*)ptr + 1;
         }
 
         CFXS_ERROR("Heap(%s): failed to allocate %u bytes\n", GetLabel(), size);
 
+#ifdef CFXS_HEAP_CHECK_LOCK
         m_Locked = false;
+#endif
         return nullptr;
     }
 
     /// Deallocate pointer
     void Heap::Deallocate(void* ptr) {
+#ifdef CFXS_HEAP_CHECK_LOCK
         CFXS_ASSERT(!m_Locked, "Heap(%s): locked :(", GetLabel());
         m_Locked = true;
+#endif
 
         if (ptr) {
             m_FreeCount++;
@@ -62,7 +70,10 @@ namespace CFXS {
         } else {
             CFXS_ERROR("Heap(%s): free nullptr :(\n", GetLabel());
         }
+
+#ifdef CFXS_HEAP_CHECK_LOCK
         m_Locked = false;
+#endif
     }
 
 } // namespace CFXS

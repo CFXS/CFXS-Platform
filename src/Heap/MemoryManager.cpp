@@ -29,21 +29,27 @@
 extern "C" void* dlmalloc(size_t bytes);
 extern "C" void dlfree(void* mem);
 //////////////////////////////////////////////////////////////////////////////////
+extern const uint32_t __HEAP_BASE__;
+extern const uint32_t __HEAP_END__;
+
+static __noinit CFXS::Heap s_MainHeap;
+static bool s_MemoryManagerInitialized = false;
+//////////////////////////////////////////////////////////////////////////////////
 void* operator new(size_t size) {
-    void* p = dlmalloc(size);
+    void* p = s_MainHeap.Allocate(size);
     return p;
 }
 void* operator new[](size_t size) {
-    void* p = dlmalloc(size);
+    void* p = s_MainHeap.Allocate(size);
     return p;
 }
 
 void operator delete(void* p) {
-    dlfree(p);
+    s_MainHeap.Deallocate(p);
 }
 
 void operator delete(void* p, size_t s) {
-    dlfree(p);
+    s_MainHeap.Deallocate(p);
 }
 //////////////////////////////////////////////////////////////////////////////////
 
@@ -53,6 +59,21 @@ namespace CFXS {
     static __noinit std::array<Heap, CFXS_PLATFORM_MAX_HEAP_COUNT> s_Heaps;
     static size_t s_HeapCount = 0;
     //////////////////////////////////////////////////////////////////////////////////
+
+    /// Initialize everything (call before constructor init)
+    void MemoryManager::Initialize() {
+        if (s_MemoryManagerInitialized) {
+            CFXS_ERROR("MemoryManager: already initialized");
+            return;
+        }
+
+        auto heapBase = (uint8_t*)&__HEAP_BASE__; // no need to align to 4 - linkerscript should already take care of that
+        auto heapSize = ((size_t)&__HEAP_END__ - (size_t)&__HEAP_BASE__);
+
+        new (&s_MainHeap) CFXS::Heap("Main Heap", heapBase, heapSize);
+
+        s_MemoryManagerInitialized = true;
+    }
 
     /// Create new heap
     /// \param label heap label

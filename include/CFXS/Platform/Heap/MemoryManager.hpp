@@ -23,6 +23,9 @@ namespace CFXS {
 
     class MemoryManager {
     public:
+        /// Initialize everything (call before constructor init)
+        static void Initialize();
+
         /// Create new heap
         /// \param label heap label
         /// \param size max size

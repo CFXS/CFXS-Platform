@@ -17,10 +17,11 @@
 // ---------------------------------------------------------------------
 // [CFXS] //
 #include <type_traits>
+#include <driverlib/sysctl.h>
 #include <CFXS/Base/Debug.hpp>
 #include <CFXS/Base/Cortex_M/VectorTable_TM4C129X.hpp>
 #include <CFXS/Platform/CPU.hpp>
-#include <driverlib/sysctl.h>
+#include <CFXS/Platform/Heap/MemoryManager.hpp>
 
 // Empty handler for Tiva lib ASSERT
 extern "C" __weak void __error__(char* pcFilename, uint32_t ui32Line) {
@@ -103,6 +104,8 @@ __used __weak void __cfxs_data_init() {
                  "        it      lt             \n"
                  "        strlt   r2, [r0], #4   \n"
                  "        blt     zeroinit_loop    ");
+
+    CFXS::MemoryManager::Initialize();
 
     // ctor init
     for (auto i = 0; i < __PREINIT_ARRAY_END__ - __PREINIT_ARRAY_START__; i++) {

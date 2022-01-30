@@ -30,6 +30,10 @@
 //
 ///////////////////////////////////////////////////////////////////////////////
 
+/////////////////////////////////////////////////////////////////////////////////
+// TODO: add defines here and in toolchain cmake to enable/disable double support
+/////////////////////////////////////////////////////////////////////////////////
+
 #include <stdbool.h>
 #include <stdint.h>
 #include <stdarg.h>
@@ -44,58 +48,58 @@ extern "C" unsigned SEGGER_RTT_Write(unsigned BufferIndex, const void* pBuffer, 
 // printf_config.h header file
 // default: undefined
 #ifdef PRINTF_INCLUDE_CONFIG_H
-#include "printf_config.h"
+    #include "printf_config.h"
 #endif
 
 // 'ntoa' conversion buffer size, this must be big enough to hold one converted
 // numeric number including padded zeros (dynamically created on stack)
 // default: 32 byte
 #ifndef PRINTF_NTOA_BUFFER_SIZE
-#define PRINTF_NTOA_BUFFER_SIZE 32U
+    #define PRINTF_NTOA_BUFFER_SIZE 32U
 #endif
 
 // 'ftoa' conversion buffer size, this must be big enough to hold one converted
 // float number including padded zeros (dynamically created on stack)
 // default: 32 byte
 #ifndef PRINTF_FTOA_BUFFER_SIZE
-#define PRINTF_FTOA_BUFFER_SIZE 32U
+    #define PRINTF_FTOA_BUFFER_SIZE 32U
 #endif
 
 // support for the floating point type (%f)
 // default: activated
 #ifndef PRINTF_DISABLE_SUPPORT_FLOAT
-#define PRINTF_SUPPORT_FLOAT
+    #define PRINTF_SUPPORT_FLOAT
 #endif
 
 // support for exponential floating point notation (%e/%g)
 // default: activated
 #ifndef PRINTF_DISABLE_SUPPORT_EXPONENTIAL
-#define PRINTF_SUPPORT_EXPONENTIAL
+    #define PRINTF_SUPPORT_EXPONENTIAL
 #endif
 
 // define the default floating point precision
 // default: 6 digits
 #ifndef PRINTF_DEFAULT_FLOAT_PRECISION
-#define PRINTF_DEFAULT_FLOAT_PRECISION 6U
+    #define PRINTF_DEFAULT_FLOAT_PRECISION 6U
 #endif
 
 // define the largest float suitable to print with %f
 // default: 1e9
 #ifndef PRINTF_MAX_FLOAT
-#define PRINTF_MAX_FLOAT 1e9
+    #define PRINTF_MAX_FLOAT 1e9
 #endif
 
 // support for the long long types (%llu or %p)
 // default: activated
 #ifndef PRINTF_DISABLE_SUPPORT_LONG_LONG
-#define PRINTF_SUPPORT_LONG_LONG
+    #define PRINTF_SUPPORT_LONG_LONG
 #endif
 
 // support for the ptrdiff_t type (%t)
 // ptrdiff_t is normally defined in <stddef.h> as long or long long type
 // default: activated
 #ifndef PRINTF_DISABLE_SUPPORT_PTRDIFF_T
-#define PRINTF_SUPPORT_PTRDIFF_T
+    #define PRINTF_SUPPORT_PTRDIFF_T
 #endif
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -116,7 +120,7 @@ extern "C" unsigned SEGGER_RTT_Write(unsigned BufferIndex, const void* pBuffer, 
 
 // import float.h for DBL_MAX
 #if defined(PRINTF_SUPPORT_FLOAT)
-#include <float.h>
+    #include <float.h>
 #endif
 
 // output function type
@@ -338,21 +342,33 @@ static size_t _ntoa_long_long(out_fct_type out,
 
 #if defined(PRINTF_SUPPORT_FLOAT)
 
-#if defined(PRINTF_SUPPORT_EXPONENTIAL)
+    #if defined(PRINTF_SUPPORT_EXPONENTIAL)
 // forward declaration so that _ftoa can switch to exp notation for values > PRINTF_MAX_FLOAT
-static size_t
-_etoa(out_fct_type out, char* buffer, size_t idx, size_t maxlen, double value, unsigned int prec, unsigned int width, unsigned int flags);
-#endif
+static size_t _etoa(out_fct_type out,
+                    char* buffer,
+                    size_t idx,
+                    size_t maxlen,
+                    PRINTF_FLOAT_TYPE value,
+                    unsigned int prec,
+                    unsigned int width,
+                    unsigned int flags);
+    #endif
 
 // internal ftoa for fixed decimal floating point
-static size_t
-_ftoa(out_fct_type out, char* buffer, size_t idx, size_t maxlen, double value, unsigned int prec, unsigned int width, unsigned int flags) {
+static size_t _ftoa(out_fct_type out,
+                    char* buffer,
+                    size_t idx,
+                    size_t maxlen,
+                    PRINTF_FLOAT_TYPE value,
+                    unsigned int prec,
+                    unsigned int width,
+                    unsigned int flags) {
     char buf[PRINTF_FTOA_BUFFER_SIZE];
-    size_t len  = 0U;
-    double diff = 0.0;
+    size_t len             = 0U;
+    PRINTF_FLOAT_TYPE diff = 0.0;
 
     // powers of 10
-    static const double pow10[] = {1, 10, 100, 1000, 10000, 100000, 1000000, 10000000, 100000000, 1000000000};
+    static const PRINTF_FLOAT_TYPE pow10[] = {1, 10, 100, 1000, 10000, 100000, 1000000, 10000000, 100000000, 1000000000};
 
     // test for special values
     if (value != value)
@@ -365,11 +381,11 @@ _ftoa(out_fct_type out, char* buffer, size_t idx, size_t maxlen, double value, u
     // test for very large values
     // standard printf behavior is to print EVERY whole number digit -- which could be 100s of characters overflowing your buffers == bad
     if ((value > PRINTF_MAX_FLOAT) || (value < -PRINTF_MAX_FLOAT)) {
-#if defined(PRINTF_SUPPORT_EXPONENTIAL)
+    #if defined(PRINTF_SUPPORT_EXPONENTIAL)
         return _etoa(out, buffer, idx, maxlen, value, prec, width, flags);
-#else
+    #else
         return 0U;
-#endif
+    #endif
     }
 
     // test for negative
@@ -389,10 +405,10 @@ _ftoa(out_fct_type out, char* buffer, size_t idx, size_t maxlen, double value, u
         prec--;
     }
 
-    int whole          = (int)value;
-    double tmp         = (value - whole) * pow10[prec];
-    unsigned long frac = (unsigned long)tmp;
-    diff               = tmp - frac;
+    int whole             = (int)value;
+    PRINTF_FLOAT_TYPE tmp = (value - whole) * pow10[prec];
+    unsigned long frac    = (unsigned long)tmp;
+    diff                  = tmp - frac;
 
     if (diff > 0.5) {
         ++frac;
@@ -408,7 +424,7 @@ _ftoa(out_fct_type out, char* buffer, size_t idx, size_t maxlen, double value, u
     }
 
     if (prec == 0U) {
-        diff = value - (double)whole;
+        diff = value - (PRINTF_FLOAT_TYPE)whole;
         if ((!(diff < 0.5) || (diff > 0.5)) && (whole & 1)) {
             // exactly 0.5 and ODD, then round up
             // 1.5 -> 2, but 2.5 -> 2
@@ -465,10 +481,16 @@ _ftoa(out_fct_type out, char* buffer, size_t idx, size_t maxlen, double value, u
     return _out_rev(out, buffer, idx, maxlen, buf, len, width, flags);
 }
 
-#if defined(PRINTF_SUPPORT_EXPONENTIAL)
+    #if defined(PRINTF_SUPPORT_EXPONENTIAL)
 // internal ftoa variant for exponential floating-point type, contributed by Martijn Jasperse <m.jasperse@gmail.com>
-static size_t
-_etoa(out_fct_type out, char* buffer, size_t idx, size_t maxlen, double value, unsigned int prec, unsigned int width, unsigned int flags) {
+static size_t _etoa(out_fct_type out,
+                    char* buffer,
+                    size_t idx,
+                    size_t maxlen,
+                    PRINTF_FLOAT_TYPE value,
+                    unsigned int prec,
+                    unsigned int width,
+                    unsigned int flags) {
     // check for NaN and special values
     if ((value != value) || (value > DBL_MAX) || (value < -DBL_MAX)) {
         return _ftoa(out, buffer, idx, maxlen, value, prec, width, flags);
@@ -489,7 +511,7 @@ _etoa(out_fct_type out, char* buffer, size_t idx, size_t maxlen, double value, u
     // based on the algorithm by David Gay (https://www.ampl.com/netlib/fp/dtoa.c)
     union {
         uint64_t U;
-        double F;
+        PRINTF_FLOAT_TYPE F;
     } conv;
 
     conv.F   = value;
@@ -498,10 +520,10 @@ _etoa(out_fct_type out, char* buffer, size_t idx, size_t maxlen, double value, u
     // now approximate log10 from the log2 integer part and an expansion of ln around 1.5
     int expval = (int)(0.1760912590558 + exp2 * 0.301029995663981 + (conv.F - 1.5) * 0.289529654602168);
     // now we want to compute 10^expval but we want to be sure it won't overflow
-    exp2            = (int)(expval * 3.321928094887362 + 0.5);
-    const double z  = expval * 2.302585092994046 - exp2 * 0.6931471805599453;
-    const double z2 = z * z;
-    conv.U          = (uint64_t)(exp2 + 1023) << 52U;
+    exp2                       = (int)(expval * 3.321928094887362 + 0.5);
+    const PRINTF_FLOAT_TYPE z  = expval * 2.302585092994046 - exp2 * 0.6931471805599453;
+    const PRINTF_FLOAT_TYPE z2 = z * z;
+    conv.U                     = (uint64_t)(exp2 + 1023) << 52U;
     // compute exp(z) using continued fractions, see https://en.wikipedia.org/wiki/Exponential_function#Continued_fractions_for_ex
     conv.F *= 1 + 2 * z / (2 - z + (z2 / (6 + (z2 / (10 + z2 / 14)))));
     // correct for rounding errors
@@ -572,8 +594,8 @@ _etoa(out_fct_type out, char* buffer, size_t idx, size_t maxlen, double value, u
     }
     return idx;
 }
-#endif // PRINTF_SUPPORT_EXPONENTIAL
-#endif // PRINTF_SUPPORT_FLOAT
+    #endif // PRINTF_SUPPORT_EXPONENTIAL
+#endif     // PRINTF_SUPPORT_FLOAT
 
 // internal vsnprintf
 static int _vsnprintf(out_fct_type out, char* buffer, const size_t maxlen, const char* format, va_list va) {
@@ -798,10 +820,10 @@ static int _vsnprintf(out_fct_type out, char* buffer, const size_t maxlen, const
             case 'F':
                 if (*format == 'F')
                     flags |= FLAGS_UPPERCASE;
-                idx = _ftoa(out, buffer, idx, maxlen, va_arg(va, double), precision, width, flags);
+                idx = _ftoa(out, buffer, idx, maxlen, va_arg(va, PRINTF_FLOAT_TYPE), precision, width, flags);
                 format++;
                 break;
-#if defined(PRINTF_SUPPORT_EXPONENTIAL)
+    #if defined(PRINTF_SUPPORT_EXPONENTIAL)
             case 'e':
             case 'E':
             case 'g':
@@ -810,11 +832,11 @@ static int _vsnprintf(out_fct_type out, char* buffer, const size_t maxlen, const
                     flags |= FLAGS_ADAPT_EXP;
                 if ((*format == 'E') || (*format == 'G'))
                     flags |= FLAGS_UPPERCASE;
-                idx = _etoa(out, buffer, idx, maxlen, va_arg(va, double), precision, width, flags);
+                idx = _etoa(out, buffer, idx, maxlen, va_arg(va, PRINTF_FLOAT_TYPE), precision, width, flags);
                 format++;
                 break;
-#endif // PRINTF_SUPPORT_EXPONENTIAL
-#endif // PRINTF_SUPPORT_FLOAT
+    #endif // PRINTF_SUPPORT_EXPONENTIAL
+#endif     // PRINTF_SUPPORT_FLOAT
             case 'c': {
                 unsigned int l = 1U;
                 // pre padding

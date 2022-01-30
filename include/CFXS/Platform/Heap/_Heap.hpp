@@ -6,6 +6,8 @@ extern "C" void* mspace_malloc(void* msp, size_t bytes);
 extern "C" void mspace_free(void* msp, void* mem);
 //////////////////////////////////////////////////////////////////////////////////
 
+// CFXS_HEAP_CHECK_LOCK (CFXSDEF:Platform) Check if heap is locked on alloc and free
+
 namespace CFXS {
 
     class Heap {
@@ -94,7 +96,7 @@ namespace CFXS {
         uint64_t m_AllocCount; // Allocation count
         uint64_t m_FreeCount;  // Free count
 
-#ifdef DEBUG
+#ifdef CFXS_HEAP_CHECK_LOCK
         bool m_Locked = false;
 #endif
     };
