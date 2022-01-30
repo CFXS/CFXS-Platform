@@ -51,6 +51,10 @@ void operator delete(void* p) {
 void operator delete(void* p, size_t s) {
     s_MainHeap.Deallocate(p);
 }
+
+void* operator new[](size_t size, const char* name, int flags, unsigned debugFlags, const char* file, int line) {
+    return new uint8_t[size];
+}
 //////////////////////////////////////////////////////////////////////////////////
 
 namespace CFXS {

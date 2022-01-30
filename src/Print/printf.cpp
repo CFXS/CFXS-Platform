@@ -140,12 +140,12 @@ static inline void _out_buffer(char character, void* buffer, size_t idx, size_t 
 }
 
 // internal null output
-static inline void _out_null(char character, void* buffer, size_t idx, size_t maxlen) {
-    (void)character;
-    (void)buffer;
-    (void)idx;
-    (void)maxlen;
-}
+//static inline void _out_null(char character, void* buffer, size_t idx, size_t maxlen) {
+//    (void)character;
+//    (void)buffer;
+//    (void)idx;
+//    (void)maxlen;
+//}
 
 // internal _putchar wrapper
 static inline void _out_char(char character, void* buffer, size_t idx, size_t maxlen) {
@@ -603,8 +603,9 @@ static int _vsnprintf(out_fct_type out, char* buffer, const size_t maxlen, const
     size_t idx = 0U;
 
     if (!buffer) {
+        return 0;
         // use null output function
-        out = _out_null;
+        // out = _out_null;
     }
 
     while (*format) {
