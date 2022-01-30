@@ -27,20 +27,33 @@ extern "C" {
 #define LACKS_UNISTD_H
 #define LACKS_FCNTL_H
 #define LACKS_SYS_PARAM_H
-#define MORECORE_CONTIGUOUS  0
-#define MORECORE_CANNOT_TRIM 0
+#define LACKS_ERRNO_H
 #define USE_DL_PREFIX
 #define LACKS_TIME_H
 
 ///////////////////////////////
+#include <CFXS/Base/Debug.hpp>
 // CFXS Config
 extern const uint32_t __HEAP_BASE__;
 extern const uint32_t __HEAP_END__;
 
-#define USE_LOCKS     0
-#define HAVE_MORECORE 0
-#define HAVE_MMAP     0
-#define HAVE_MREMAP   0
+#define MSPACES              1
+#define USE_LOCKS            0
+#define HAVE_MORECORE        0
+#define MORECORE_CONTIGUOUS  0
+#define MORECORE_CANNOT_TRIM 0
+#define HAVE_MMAP            0
+#define HAVE_MREMAP          0
+
+#ifndef CFXS_DLMALLOC_ERROR_PRINT // [CFXSDEF:Platform] Print error message on dlmalloc failure
+#define CFXS_DLMALLOC_ERROR_PRINT 1
+#endif
+
+#if CFXS_DLMALLOC_ERROR_PRINT == 1
+#define MALLOC_FAILURE_ACTION(reason) CFXS_ERROR("dlmalloc %s", reason)
+#else
+#define MALLOC_FAILURE_ACTION(reason)
+#endif
 ///////////////////////////////
 
 
@@ -970,16 +983,6 @@ DLMALLOC_EXPORT void* dlrealloc_in_place(void*, size_t);
   Overreliance on memalign is a sure way to fragment space.
 */
 DLMALLOC_EXPORT void* dlmemalign(size_t, size_t);
-
-/*
-  int posix_memalign(void** pp, size_t alignment, size_t n);
-  Allocates a chunk of n bytes, aligned in accord with the alignment
-  argument. Differs from memalign only in that it (1) assigns the
-  allocated memory to *pp rather than returning it, (2) fails and
-  returns EINVAL if the alignment is not a power of two (3) fails and
-  returns ENOMEM if memory cannot be allocated.
-*/
-DLMALLOC_EXPORT int dlposix_memalign(void**, size_t, size_t);
 
 /*
   valloc(size_t n);
@@ -4079,7 +4082,7 @@ static void* sys_alloc(mstate m, size_t nb) {
         }
     }
 
-    MALLOC_FAILURE_ACTION;
+    MALLOC_FAILURE_ACTION("out of memory");
     return 0;
 }
 
@@ -4707,7 +4710,7 @@ static void* internal_memalign(mstate m, size_t alignment, size_t bytes) {
     }
     if (bytes >= MAX_REQUEST - alignment) {
         if (m != 0) { /* Test isn't needed but avoids compiler warning */
-            MALLOC_FAILURE_ACTION;
+            MALLOC_FAILURE_ACTION("bytes >= MAX_REQUEST");
         }
     } else {
         size_t nb  = request2size(bytes);
@@ -4974,7 +4977,7 @@ void* dlrealloc(void* oldmem, size_t bytes) {
     if (oldmem == 0) {
         mem = dlmalloc(bytes);
     } else if (bytes >= MAX_REQUEST) {
-        MALLOC_FAILURE_ACTION;
+        MALLOC_FAILURE_ACTION("bytes >= MAX_REQUEST");
     }
     #ifdef REALLOC_ZERO_BYTES_FREES
     else if (bytes == 0) {
@@ -5016,7 +5019,7 @@ void* dlrealloc_in_place(void* oldmem, size_t bytes) {
     void* mem = 0;
     if (oldmem != 0) {
         if (bytes >= MAX_REQUEST) {
-            MALLOC_FAILURE_ACTION;
+            MALLOC_FAILURE_ACTION("bytes >= MAX_REQUEST");
         } else {
             size_t nb      = request2size(bytes);
             mchunkptr oldp = mem2chunk(oldmem);
@@ -5047,29 +5050,6 @@ void* dlmemalign(size_t alignment, size_t bytes) {
         return dlmalloc(bytes);
     }
     return internal_memalign(gm, alignment, bytes);
-}
-
-int dlposix_memalign(void** pp, size_t alignment, size_t bytes) {
-    void* mem = 0;
-    if (alignment == MALLOC_ALIGNMENT)
-        mem = dlmalloc(bytes);
-    else {
-        size_t d = alignment / sizeof(void*);
-        size_t r = alignment % sizeof(void*);
-        if (r != 0 || d == 0 || (d & (d - SIZE_T_ONE)) != 0)
-            return EINVAL;
-        else if (bytes <= MAX_REQUEST - alignment) {
-            if (alignment < MIN_CHUNK_SIZE)
-                alignment = MIN_CHUNK_SIZE;
-            mem = internal_memalign(gm, alignment, bytes);
-        }
-    }
-    if (mem == 0)
-        return ENOMEM;
-    else {
-        *pp = mem;
-        return 0;
-    }
 }
 
 void* dlvalloc(size_t bytes) {
@@ -5501,7 +5481,7 @@ void* mspace_realloc(mspace msp, void* oldmem, size_t bytes) {
     if (oldmem == 0) {
         mem = mspace_malloc(msp, bytes);
     } else if (bytes >= MAX_REQUEST) {
-        MALLOC_FAILURE_ACTION;
+        MALLOC_FAILURE_ACTION("bytes >= MAX_REQUEST");
     }
     #ifdef REALLOC_ZERO_BYTES_FREES
     else if (bytes == 0) {
@@ -5543,7 +5523,7 @@ void* mspace_realloc_in_place(mspace msp, void* oldmem, size_t bytes) {
     void* mem = 0;
     if (oldmem != 0) {
         if (bytes >= MAX_REQUEST) {
-            MALLOC_FAILURE_ACTION;
+            MALLOC_FAILURE_ACTION("bytes >= MAX_REQUEST");
         } else {
             size_t nb      = request2size(bytes);
             mchunkptr oldp = mem2chunk(oldmem);

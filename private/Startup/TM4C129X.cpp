@@ -1,17 +1,17 @@
 // ---------------------------------------------------------------------
 // CFXS Framework Platform Module <https://github.com/CFXS/CFXS-Platform>
 // Copyright (C) 2022 | CFXS / Rihards Veips
-// 
+//
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
 // the Free Software Foundation, either version 3 of the License, or
 // (at your option) any later version.
-// 
+//
 // This program is distributed in the hope that it will be useful,
 // but WITHOUT ANY WARRANTY; without even the implied warranty of
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
 // GNU General Public License for more details.
-// 
+//
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>
 // ---------------------------------------------------------------------
@@ -52,6 +52,7 @@ extern void (*const __FINI_ARRAY_END__[])(void);
 __weak __used void __cfxs_entry_point() {
     extern void main();
 
+#ifdef DEBUG
     size_t stackSize   = (size_t)&__STACK_BASE__ - (size_t)&__STACK_END__;
     size_t heapSize    = (size_t)&__HEAP_END__ - (size_t)&__HEAP_BASE__;
     size_t ramDataSize = (size_t)&__BSS_END__ - (size_t)&__DATA_START__;
@@ -62,6 +63,7 @@ __weak __used void __cfxs_entry_point() {
     CFXS_printf(" - RAM Data:  %3ukB\t[0x%08X - 0x%08X]\n", ramDataSize / 1024, (size_t)&__DATA_START__, (size_t)&__BSS_END__);
     CFXS_printf(" - Stack:     %3ukB\t[0x%08X - 0x%08X]\n", stackSize / 1024, (size_t)&__STACK_END__, (size_t)&__STACK_BASE__);
     CFXS_printf(" - Heap:      %3ukB\t[0x%08X - 0x%08X]\n", heapSize / 1024, (size_t)&__HEAP_BASE__, (size_t)&__HEAP_END__);
+#endif
 
     main();
 }
