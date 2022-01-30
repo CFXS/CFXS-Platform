@@ -67,7 +67,7 @@ namespace CFXS {
         }
 
         if (baseAddress) {
-            CFXS_ASSERT((size_t)baseAddress & 3, "CreateHeap(%s, %u, 0x%p): Base address not aligned to 4", label, size, baseAddress);
+            CFXS_ASSERT(!((size_t)baseAddress & 3), "CreateHeap(%s, %u, 0x%p): Base address not aligned to 4", label, size, baseAddress);
         } else {
             baseAddress = new uint8_t[size];
             if (!baseAddress) {
