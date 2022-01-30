@@ -29,7 +29,7 @@
 extern "C" void* dlmalloc(size_t bytes);
 extern "C" void dlfree(void* mem);
 //////////////////////////////////////////////////////////////////////////////////
-extern const uint32_t __HEAP_BASE__;
+extern const uint32_t __HEAP_START__;
 extern const uint32_t __HEAP_END__;
 
 static __noinit CFXS::Heap s_MainHeap;
@@ -67,8 +67,8 @@ namespace CFXS {
             return;
         }
 
-        auto heapBase = (uint8_t*)&__HEAP_BASE__; // no need to align to 4 - linkerscript should already take care of that
-        auto heapSize = ((size_t)&__HEAP_END__ - (size_t)&__HEAP_BASE__);
+        auto heapBase = (uint8_t*)&__HEAP_START__; // no need to align to 4 - linkerscript should already take care of that
+        auto heapSize = ((size_t)&__HEAP_END__ - (size_t)&__HEAP_START__);
 
         new (&s_MainHeap) CFXS::Heap("Main Heap", heapBase, heapSize);
 

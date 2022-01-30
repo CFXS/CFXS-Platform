@@ -30,9 +30,9 @@ extern "C" __weak void __error__(char* pcFilename, uint32_t ui32Line) {
 
 /////////////////////////////////////////////////////////////
 // Externals
-extern const uint32_t __STACK_BASE__;            // Stack base is higher in memory than stack end
+extern const uint32_t __STACK_START__;           // Stack base is higher in memory than stack end
 extern const uint32_t __STACK_END__;             // Stack limit (start of heap)
-extern const uint32_t __HEAP_BASE__;             // Heap base
+extern const uint32_t __HEAP_START__;            // Heap base
 extern const uint32_t __HEAP_END__;              // End of heap (should be end of RAM)
 extern const uint32_t __TEXT_START__;            // Start of ROM data
 extern const uint32_t __TEXT_END__;              // End of ROM data
@@ -54,16 +54,16 @@ __weak __used void __cfxs_entry_point() {
     extern void main();
 
 #ifdef DEBUG
-    size_t stackSize   = (size_t)&__STACK_BASE__ - (size_t)&__STACK_END__;
-    size_t heapSize    = (size_t)&__HEAP_END__ - (size_t)&__HEAP_BASE__;
+    size_t stackSize   = (size_t)&__STACK_START__ - (size_t)&__STACK_END__;
+    size_t heapSize    = (size_t)&__HEAP_END__ - (size_t)&__HEAP_START__;
     size_t ramDataSize = (size_t)&__BSS_END__ - (size_t)&__DATA_START__;
     size_t romDataSize = (size_t)&__TEXT_END__ - (size_t)&__TEXT_START__;
 
     CFXS_printf("[CFXS-Platform TM4C129X]\n");
     CFXS_printf(" - ROM Data:  %3ukB\t[0x%08X - 0x%08X]\n", romDataSize / 1024, (size_t)&__TEXT_START__, (size_t)&__TEXT_END__);
     CFXS_printf(" - RAM Data:  %3ukB\t[0x%08X - 0x%08X]\n", ramDataSize / 1024, (size_t)&__DATA_START__, (size_t)&__BSS_END__);
-    CFXS_printf(" - Stack:     %3ukB\t[0x%08X - 0x%08X]\n", stackSize / 1024, (size_t)&__STACK_END__, (size_t)&__STACK_BASE__);
-    CFXS_printf(" - Heap:      %3ukB\t[0x%08X - 0x%08X]\n", heapSize / 1024, (size_t)&__HEAP_BASE__, (size_t)&__HEAP_END__);
+    CFXS_printf(" - Stack:     %3ukB\t[0x%08X - 0x%08X]\n", stackSize / 1024, (size_t)&__STACK_END__, (size_t)&__STACK_START__);
+    CFXS_printf(" - Heap:      %3ukB\t[0x%08X - 0x%08X]\n", heapSize / 1024, (size_t)&__HEAP_START__, (size_t)&__HEAP_END__);
 #endif
 
     main();
@@ -104,6 +104,17 @@ __used __weak void __cfxs_data_init() {
                  "        it      lt             \n"
                  "        strlt   r2, [r0], #4   \n"
                  "        blt     zeroinit_loop    ");
+
+    // fill stack pattern
+    volatile auto sp = (uint32_t*)CFXS::CPU::__GetSP();
+    for (uint32_t* wptr = (uint32_t*)&__STACK_END__; wptr < sp; wptr++) {
+        *wptr = 0xCDCDCDCD;
+    }
+
+    // fill heap pattern
+    for (uint32_t* wptr = (uint32_t*)&__HEAP_START__; wptr < (uint32_t*)&__HEAP_END__; wptr++) {
+        *wptr = 0xDEDEDEDE;
+    }
 
     CFXS::MemoryManager::Initialize();
 
@@ -148,7 +159,7 @@ __interrupt __weak void __cfxs_isr_Unhandled(void) {
     CFXS::CPU::Reset();
 }
 
-__vector_table const CFXS::Cortex_M::VectorTable_TM4C129X<&__STACK_BASE__, __cfxs_reset, __cfxs_isr_Unhandled> g_VectorTable =
+__vector_table const CFXS::Cortex_M::VectorTable_TM4C129X<&__STACK_START__, __cfxs_reset, __cfxs_isr_Unhandled> g_VectorTable =
     []() constexpr {
     std::remove_cv<decltype(g_VectorTable)>::type vt;
     vt.isr_HardFault = __cfxs_isr_HardFault;
