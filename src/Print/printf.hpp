@@ -39,7 +39,7 @@
 extern "C" {
 #endif
 
-#define PRINTF_FLOAT_TYPE float
+#define PRINTF_FLOAT_TYPE double
 #define PRINTF_DISABLE_SUPPORT_EXPONENTIAL
 #define PRINTF_DISABLE_SUPPORT_PTRDIFF_T
 

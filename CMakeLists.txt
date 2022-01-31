@@ -8,17 +8,11 @@ file(GLOB_RECURSE headers CONFIGURE_DEPENDS
   "${CMAKE_CURRENT_SOURCE_DIR}/include/*.hpp"
 )
 
-file(GLOB_RECURSE eastl_headers CONFIGURE_DEPENDS
-  "${CMAKE_CURRENT_SOURCE_DIR}/private/EASTL/*.h"
-)
-
 set_source_files_properties(${sources} PROPERTIES LANGUAGE CXX)
 set_source_files_properties(${headers} PROPERTIES LANGUAGE CXX)
-set_source_files_properties(${eastl_headers} PROPERTIES LANGUAGE CXX)
 
 add_library(CFXS_Platform ${sources})
 target_include_directories(CFXS_Platform PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/include)
-target_include_directories(CFXS_Platform PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/private/EASTL/include)
 target_include_directories(CFXS_Platform PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/src)
 
 if(${CFXS_STARTUP_PLATFORM} STREQUAL "TM4C129X")
