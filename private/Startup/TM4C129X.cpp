@@ -19,9 +19,9 @@
 #include <type_traits>
 #include <driverlib/sysctl.h>
 #include <CFXS/Base/Debug.hpp>
-#include <CFXS/Base/Cortex_M/VectorTable_TM4C129X.hpp>
 #include <CFXS/Platform/CPU.hpp>
 #include <CFXS/Platform/Heap/MemoryManager.hpp>
+#include <CFXS/Platform/Types/Cortex_M/VectorTable_TM4C129X.hpp>
 
 // Empty handler for Tiva lib ASSERT
 extern "C" __weak void __error__(char* pcFilename, uint32_t ui32Line) {

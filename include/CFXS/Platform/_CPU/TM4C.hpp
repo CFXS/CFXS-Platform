@@ -16,17 +16,12 @@
 // along with this program.  If not, see <http://www.gnu.org/licenses/>
 // ---------------------------------------------------------------------
 // [CFXS] //
+#pragma once
 #include <inc/hw_nvic.h>
 #include <inc/hw_types.h>
 #include "Cortex_M.hpp"
 
 namespace CFXS::CPU {
-
-    static constexpr size_t CLOCK_FREQUENCY      = CFXS_CPU_CLOCK_FREQUENCY;
-    static constexpr size_t CYCLES_PER_MS        = CLOCK_FREQUENCY / 1000;
-    static constexpr size_t CYCLES_PER_USEC      = CLOCK_FREQUENCY / 1000000;
-    static constexpr float CYCLES_PER_MS_FLOAT   = CLOCK_FREQUENCY / 1000.0f;
-    static constexpr float CYCLES_PER_USEC_FLOAT = CLOCK_FREQUENCY / 1000000.0f;
 
     /// Reset CPU
     static __always_inline __noreturn void Reset() {

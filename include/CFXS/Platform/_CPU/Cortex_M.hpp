@@ -17,6 +17,13 @@
 // ---------------------------------------------------------------------
 // [CFXS] //
 #pragma once
+#include "../ClocksAndCycles.hpp"
+
+#ifdef CFXS_CORE_CORTEX_M4
+    #include "Registers/Cortex_M4.hpp"
+#else
+    #error unknown core
+#endif
 
 namespace CFXS::CPU {
 
@@ -68,6 +75,19 @@ namespace CFXS::CPU {
         uint32_t res = 0;
         asm("clz %[dest], %[val]" : [dest] "=r"(res) : [val] "r"(res));
         return res;
+    }
+
+    /// Block for x cycles
+    void __naked BlockingCycles(uint32_t cycles);
+
+    /// Block for x miroseconds
+    void __always_inline BlockingMicroseconds(uint32_t usec) {
+        BlockingCycles(usec * CYCLES_PER_USEC);
+    }
+
+    /// Block for x milliseconds
+    void __always_inline BlockingMilliseconds(uint32_t ms) {
+        BlockingCycles(ms * CYCLES_PER_MS);
     }
 
 } // namespace CFXS::CPU
