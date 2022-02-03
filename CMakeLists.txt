@@ -9,7 +9,6 @@ file(GLOB_RECURSE headers CONFIGURE_DEPENDS
 )
 
 set_source_files_properties(${sources} PROPERTIES LANGUAGE CXX)
-#set_source_files_properties(${headers} PROPERTIES LANGUAGE CXX)
 
 add_library(CFXS_Platform ${sources} ${headers})
 target_include_directories(CFXS_Platform PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/include)
