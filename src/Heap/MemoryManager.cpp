@@ -39,6 +39,7 @@ void* operator new(size_t size) {
     void* p = s_MainHeap.Allocate(size);
     return p;
 }
+
 void* operator new[](size_t size) {
     void* p = s_MainHeap.Allocate(size);
     return p;
@@ -54,6 +55,15 @@ void operator delete(void* p, size_t s) {
 
 void* operator new[](size_t size, const char* name, int flags, unsigned debugFlags, const char* file, int line) {
     return new uint8_t[size];
+}
+
+extern "C" void* malloc(size_t bytes) {
+    void* p = s_MainHeap.Allocate(bytes);
+    return p;
+}
+
+extern "C" void free(void* mem) {
+    s_MainHeap.Deallocate(mem);
 }
 //////////////////////////////////////////////////////////////////////////////////
 

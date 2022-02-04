@@ -53,7 +53,6 @@ extern void (*const __FINI_ARRAY_END__[])(void);
 __weak __used void __cfxs_entry_point() {
     extern void main();
 
-#ifdef DEBUG
     size_t stackSize   = (size_t)&__STACK_START__ - (size_t)&__STACK_END__;
     size_t heapSize    = (size_t)&__HEAP_END__ - (size_t)&__HEAP_START__;
     size_t ramDataSize = (size_t)&__BSS_END__ - (size_t)&__DATA_START__;
@@ -64,7 +63,6 @@ __weak __used void __cfxs_entry_point() {
     CFXS_printf(" - RAM Data:  %3ukB\t[0x%08X - 0x%08X]\n", ramDataSize / 1024, (size_t)&__DATA_START__, (size_t)&__BSS_END__);
     CFXS_printf(" - Stack:     %3ukB\t[0x%08X - 0x%08X]\n", stackSize / 1024, (size_t)&__STACK_END__, (size_t)&__STACK_START__);
     CFXS_printf(" - Heap:      %3ukB\t[0x%08X - 0x%08X]\n", heapSize / 1024, (size_t)&__HEAP_START__, (size_t)&__HEAP_END__);
-#endif
 
     main();
 }
