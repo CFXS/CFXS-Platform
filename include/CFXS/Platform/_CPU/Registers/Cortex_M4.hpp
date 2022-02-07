@@ -1,5 +1,6 @@
 // [CFXS] //
 #include "../../Types/Cortex_M/MPU.hpp"
+#include "../../Types/Cortex_M/DWT.hpp"
 
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wunused-variable"
@@ -15,6 +16,13 @@ namespace CFXS::CPU::Registers {
         static auto* MPU_RASR = reinterpret_cast<volatile Types::Reg_MPU_RASR*>(0xE000EDA0);
 
     } // namespace MPU
+
+    namespace DWT {
+
+        static auto* DWT_CTRL   = reinterpret_cast<volatile Types::Reg_DWT_CTRL*>(0xE0001000);
+        static auto* DWT_CYCCNT = reinterpret_cast<volatile Types::Reg_DWT_CYCCNT*>(0xE0001004);
+
+    } // namespace DWT
 
 } // namespace CFXS::CPU::Registers
 

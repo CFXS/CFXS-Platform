@@ -22,6 +22,7 @@
 #include <CFXS/Platform/CPU.hpp>
 #include <CFXS/Platform/Heap/MemoryManager.hpp>
 #include <CFXS/Platform/Types/Cortex_M/VectorTable_TM4C129X.hpp>
+#include <vector>
 
 // Empty handler for Tiva lib ASSERT
 extern "C" __weak void __error__(char* pcFilename, uint32_t ui32Line) {
@@ -58,7 +59,7 @@ __weak __used void __cfxs_entry_point() {
     size_t ramDataSize = (size_t)&__BSS_END__ - (size_t)&__DATA_START__;
     size_t romDataSize = (size_t)&__TEXT_END__ - (size_t)&__TEXT_START__;
 
-    CFXS_printf("[CFXS-Platform TM4C129X]\n");
+    CFXS_printf("[" CFXS_PROJECT_NAME " " CFXS_PROJECT_VERSION_STRING "]\n");
     CFXS_printf(" - ROM Data:  %3ukB\t[0x%08X - 0x%08X]\n", romDataSize / 1024, (size_t)&__TEXT_START__, (size_t)&__TEXT_END__);
     CFXS_printf(" - RAM Data:  %3ukB\t[0x%08X - 0x%08X]\n", ramDataSize / 1024, (size_t)&__DATA_START__, (size_t)&__BSS_END__);
     CFXS_printf(" - Stack:     %3ukB\t[0x%08X - 0x%08X]\n", stackSize / 1024, (size_t)&__STACK_END__, (size_t)&__STACK_START__);
@@ -83,6 +84,8 @@ __used __weak void __cfxs_init() {
 
     // Configure clock (for fast init)
     SysCtlClockFreqSet((SYSCTL_XTAL_25MHZ | SYSCTL_OSC_MAIN | SYSCTL_USE_PLL | SYSCTL_CFG_VCO_480), CFXS::CPU::CLOCK_FREQUENCY);
+
+    CFXS::CPU::EnableCycleCounter();
 }
 
 // Default data init
