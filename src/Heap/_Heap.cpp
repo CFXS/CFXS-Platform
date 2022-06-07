@@ -12,10 +12,11 @@ namespace CFXS {
     Heap::Heap(const char* label, void* base, size_t size) : m_Label(label) {
         m_Handle = create_mspace_with_base(base, size, 0);
         if (m_Handle) {
-            m_Size       = size;
-            m_UsedBytes  = 0;
-            m_AllocCount = 0;
-            m_FreeCount  = 0;
+            m_Size         = size;
+            m_UsedBytes    = 0;
+            m_MaxUsedBytes = 0;
+            m_AllocCount   = 0;
+            m_FreeCount    = 0;
         } else {
             CFXS_ERROR("Heap: Failed to create mspace [base = 0x%p, size = %u]", base, size);
         }
