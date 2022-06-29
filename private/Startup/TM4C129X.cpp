@@ -18,11 +18,14 @@
 // [CFXS] //
 #include <type_traits>
 #include <driverlib/sysctl.h>
+#include <driverlib/systick.h>
+#include <CFXS/Base/Time.hpp>
 #include <CFXS/Base/Debug.hpp>
+#include <CFXS/Base/Macros.hpp>
 #include <CFXS/Platform/CPU.hpp>
+#include <CFXS/Platform/App.hpp>
 #include <CFXS/Platform/Heap/MemoryManager.hpp>
 #include <CFXS/Platform/Types/Cortex_M/VectorTable_TM4C129X.hpp>
-#include <vector>
 
 // Empty handler for Tiva lib ASSERT
 extern "C" __weak void __error__(char* pcFilename, uint32_t ui32Line) {
@@ -51,8 +54,25 @@ extern void (*const __FINI_ARRAY_END__[])(void);
 /////////////////////////////////////////////////////////////
 // Default startup
 
+extern const CFXS::AppDescriptor e_AppDescriptor;
+namespace CFXS {
+    namespace Time {
+        volatile Time_t ms = 0;
+    }
+
+    namespace Platform {
+        extern void CoreInit(const CFXS::AppDescriptor& appDesc);
+    }
+} // namespace CFXS
+
 __weak __used void __cfxs_entry_point() {
     extern void main();
+
+    CFXS::Platform::CoreInit(e_AppDescriptor);
+    CFXS_IF_CALL(e_AppDescriptor.moduleInit);
+    CFXS_IF_CALL(e_AppDescriptor.postInit);
+
+    CFXS::CPU::EnableInterrupts();
 
     size_t stackSize   = (size_t)&__STACK_START__ - (size_t)&__STACK_END__;
     size_t heapSize    = (size_t)&__HEAP_END__ - (size_t)&__HEAP_START__;
@@ -65,7 +85,9 @@ __weak __used void __cfxs_entry_point() {
     CFXS_printf(" - Stack:     %3ukB\t[0x%08X - 0x%08X]\n", stackSize / 1024, (size_t)&__STACK_END__, (size_t)&__STACK_START__);
     CFXS_printf(" - Heap:      %3ukB\t[0x%08X - 0x%08X]\n", heapSize / 1024, (size_t)&__HEAP_START__, (size_t)&__HEAP_END__);
 
-    main();
+    while (1 < 2) {
+        main();
+    }
 }
 
 /////////////////////////////////////////////////////////////
@@ -129,8 +151,13 @@ __used __weak void __cfxs_data_init() {
     }
 }
 
+// First instructions to be executed (do JTAG lock or whatever else)
+__weak void __cfxs_startup() {
+}
+
 // Startup entry point (extern "C" for LinkerScript ENTRY)
 extern "C" __interrupt __noreturn __used void __cfxs_reset() {
+    __cfxs_startup();
     CFXS::CPU::DisableInterrupts();
 
     __cfxs_init();        // disable interrupt bits + configure clock

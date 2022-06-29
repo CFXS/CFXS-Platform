@@ -19,6 +19,7 @@ target_include_directories(CFXS_Platform PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/src
 
 if(${CFXS_STARTUP_PLATFORM} STREQUAL "TM4C129X")
   target_sources(${CMAKE_PROJECT_NAME} PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}/private/Startup/TM4C129X.cpp")
+  target_sources(${CMAKE_PROJECT_NAME} PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}/private/Platform/TM4C_CoreInit.cpp")
 else()
   message(FATAL_ERROR "CFXS-Platform unsupported CFXS_STARTUP_PLATFORM")
 endif()
