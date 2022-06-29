@@ -21,7 +21,7 @@
 #include <driverlib/systick.h>
 #include <CFXS/Base/Time.hpp>
 #include <CFXS/Base/Debug.hpp>
-#include <CFXS/Base/Macros.hpp>
+#include <CFXS/Base/Utility.hpp>
 #include <CFXS/Platform/CPU.hpp>
 #include <CFXS/Platform/App.hpp>
 #include <CFXS/Platform/Heap/MemoryManager.hpp>
@@ -69,8 +69,8 @@ __weak __used void __cfxs_entry_point() {
     extern void main();
 
     CFXS::Platform::CoreInit(e_AppDescriptor);
-    CFXS_IF_CALL(e_AppDescriptor.moduleInit);
-    CFXS_IF_CALL(e_AppDescriptor.postInit);
+    CFXS::SafeCall(e_AppDescriptor.moduleInit);
+    CFXS::SafeCall(e_AppDescriptor.postInit);
 
     CFXS::CPU::EnableInterrupts();
 
