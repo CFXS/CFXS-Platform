@@ -20,6 +20,7 @@
 #include <inc/hw_nvic.h>
 #include <inc/hw_types.h>
 #include "Cortex_M.hpp"
+#include <CFXS/Base/Debug.hpp>
 
 namespace CFXS::CPU {
 
@@ -43,7 +44,7 @@ namespace CFXS::CPU {
     /// Are global interrupts enabled
     /// \returns true if global interrupts are enabled
     static __always_inline bool AreInterruptsEnabled() {
-        return CFXS::CPU::__GetPRIMASK();
+        return !CFXS::CPU::__GetPRIMASK();
     }
 
 } // namespace CFXS::CPU

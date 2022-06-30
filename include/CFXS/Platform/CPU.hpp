@@ -22,3 +22,17 @@
 #ifdef CFXS_PLATFORM_TM4C
     #include "_CPU/TM4C.hpp"
 #endif
+
+namespace CFXS::CPU {
+
+    template<typename T>
+    inline void SafeExec(T&& fn) {
+        bool ien = AreInterruptsEnabled();
+        if (ien)
+            DisableInterrupts();
+        fn();
+        if (ien)
+            EnableInterrupts();
+    }
+
+} // namespace CFXS::CPU

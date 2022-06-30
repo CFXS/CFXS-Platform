@@ -66,18 +66,13 @@ namespace CFXS {
 } // namespace CFXS
 
 __weak __used void __cfxs_entry_point() {
-    extern void main();
+    extern void CFXS_LowPriorityLoop();
+    static const size_t stackSize   = (size_t)&__STACK_START__ - (size_t)&__STACK_END__;
+    static const size_t heapSize    = (size_t)&__HEAP_END__ - (size_t)&__HEAP_START__;
+    static const size_t ramDataSize = (size_t)&__BSS_END__ - (size_t)&__DATA_START__;
+    static const size_t romDataSize = (size_t)&__TEXT_END__ - (size_t)&__TEXT_START__;
 
     CFXS::Platform::CoreInit(e_AppDescriptor);
-    CFXS::SafeCall(e_AppDescriptor.moduleInit);
-    CFXS::SafeCall(e_AppDescriptor.postInit);
-
-    CFXS::CPU::EnableInterrupts();
-
-    size_t stackSize   = (size_t)&__STACK_START__ - (size_t)&__STACK_END__;
-    size_t heapSize    = (size_t)&__HEAP_END__ - (size_t)&__HEAP_START__;
-    size_t ramDataSize = (size_t)&__BSS_END__ - (size_t)&__DATA_START__;
-    size_t romDataSize = (size_t)&__TEXT_END__ - (size_t)&__TEXT_START__;
 
     CFXS_printf("[" CFXS_PROJECT_NAME " " CFXS_PROJECT_VERSION_STRING "]\n");
     CFXS_printf(" - ROM Data:  %3ukB\t[0x%08X - 0x%08X]\n", romDataSize / 1024, (size_t)&__TEXT_START__, (size_t)&__TEXT_END__);
@@ -85,8 +80,13 @@ __weak __used void __cfxs_entry_point() {
     CFXS_printf(" - Stack:     %3ukB\t[0x%08X - 0x%08X]\n", stackSize / 1024, (size_t)&__STACK_END__, (size_t)&__STACK_START__);
     CFXS_printf(" - Heap:      %3ukB\t[0x%08X - 0x%08X]\n", heapSize / 1024, (size_t)&__HEAP_START__, (size_t)&__HEAP_END__);
 
+    CFXS::SafeCall(e_AppDescriptor.moduleInit);
+    CFXS::SafeCall(e_AppDescriptor.postModuleInit);
+
+    CFXS::CPU::EnableInterrupts();
+
     while (1 < 2) {
-        main();
+        CFXS_LowPriorityLoop();
     }
 }
 
