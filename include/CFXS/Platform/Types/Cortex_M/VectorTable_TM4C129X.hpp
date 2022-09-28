@@ -1,5 +1,5 @@
 // ---------------------------------------------------------------------
-// CFXS Framework Base Module <https://github.com/CFXS/CFXS-Base>
+// CFXS Framework Platform Module <https://github.com/CFXS/CFXS-Platform>
 // Copyright (C) 2022 | CFXS / Rihards Veips
 // 
 // This program is free software: you can redistribute it and/or modify

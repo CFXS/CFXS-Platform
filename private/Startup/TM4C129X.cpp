@@ -34,16 +34,16 @@ extern "C" __weak void __error__(char* pcFilename, uint32_t ui32Line) {
 
 /////////////////////////////////////////////////////////////
 // Externals
-extern const uint32_t __STACK_START__;           // Stack base is higher in memory than stack end
-extern const uint32_t __STACK_END__;             // Stack limit (start of heap)
-extern const uint32_t __HEAP_START__;            // Heap base
-extern const uint32_t __HEAP_END__;              // End of heap (should be end of RAM)
-extern const uint32_t __TEXT_START__;            // Start of ROM data
-extern const uint32_t __TEXT_END__;              // End of ROM data
-extern const uint32_t __DATA_START__;            // Const init target base
-extern const uint32_t __DATA_END__;              // Const init target end
-extern const uint32_t __CONST_INIT_DATA_START__; // Location of const init source data in flash
-extern const uint32_t __BSS_START__;             // Zero init data
+extern const uint32_t __STACK_START__;      // Stack base is higher in memory than stack end
+extern const uint32_t __STACK_END__;        // Stack limit (start of heap)
+extern const uint32_t __HEAP_START__;       // Heap base
+extern const uint32_t __HEAP_END__;         // End of heap (should be end of RAM)
+extern const uint32_t __TEXT_START__;       // Start of ROM data
+extern const uint32_t __TEXT_END__;         // End of ROM data
+extern const uint32_t __DATA_START__;       // Const init target base
+extern const uint32_t __DATA_END__;         // Const init target end
+extern const uint32_t __CONST_DATA_START__; // Location of const init source data in flash
+extern const uint32_t __BSS_START__;        // Zero init data
 extern const uint32_t __BSS_END__;
 extern void (*const __PREINIT_ARRAY_START__[])(void);
 extern void (*const __PREINIT_ARRAY_END__[])(void);
@@ -69,14 +69,14 @@ __weak __used void __cfxs_entry_point() {
     extern void CFXS_LowPriorityLoop();
     static const size_t stackSize   = (size_t)&__STACK_START__ - (size_t)&__STACK_END__;
     static const size_t heapSize    = (size_t)&__HEAP_END__ - (size_t)&__HEAP_START__;
-    static const size_t ramDataSize = (size_t)&__BSS_END__ - (size_t)&__DATA_START__;
+    static const size_t ramDataSize = (size_t)&__DATA_END__ - (size_t)&__DATA_START__;
     static const size_t romDataSize = (size_t)&__TEXT_END__ - (size_t)&__TEXT_START__;
 
     CFXS::Platform::CoreInit(e_AppDescriptor);
 
     CFXS_printf("[" CFXS_PROJECT_NAME " " CFXS_PROJECT_VERSION_STRING "]\n");
     CFXS_printf(" - ROM Data:  %3ukB\t[0x%08X - 0x%08X]\n", romDataSize / 1024, (size_t)&__TEXT_START__, (size_t)&__TEXT_END__);
-    CFXS_printf(" - RAM Data:  %3ukB\t[0x%08X - 0x%08X]\n", ramDataSize / 1024, (size_t)&__DATA_START__, (size_t)&__BSS_END__);
+    CFXS_printf(" - RAM Data:  %3ukB\t[0x%08X - 0x%08X]\n", ramDataSize / 1024, (size_t)&__DATA_START__, (size_t)&__DATA_END__);
     CFXS_printf(" - Stack:     %3ukB\t[0x%08X - 0x%08X]\n", stackSize / 1024, (size_t)&__STACK_END__, (size_t)&__STACK_START__);
     CFXS_printf(" - Heap:      %3ukB\t[0x%08X - 0x%08X]\n", heapSize / 1024, (size_t)&__HEAP_START__, (size_t)&__HEAP_END__);
 
@@ -113,7 +113,7 @@ __used __weak void __cfxs_init() {
 // Default data init
 __used __weak void __cfxs_data_init() {
     // const init
-    auto pui32Src = &__CONST_INIT_DATA_START__;
+    auto pui32Src = &__CONST_DATA_START__;
     for (uint32_t* pui32Dest = (uint32_t*)&__DATA_START__; pui32Dest < &__DATA_END__;) {
         *pui32Dest++ = *pui32Src++;
     }
@@ -136,7 +136,7 @@ __used __weak void __cfxs_data_init() {
 
     // fill heap pattern
     for (uint32_t* wptr = (uint32_t*)&__HEAP_START__; wptr < (uint32_t*)&__HEAP_END__; wptr++) {
-        *wptr = 0xDEDEDEDE;
+        //*wptr = 0xDEDEDEDE;
     }
 
     CFXS::MemoryManager::Initialize();
