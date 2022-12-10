@@ -26,7 +26,7 @@ extern void CFXS_HighPriorityLoop();
 namespace CFXS::Platform {
 
     void CoreInit(const AppDescriptor &appDesc) {
-        auto &platformDesc = *static_cast<const STM32::CoreInitDescriptor *>(appDesc.platformInitDescriptor);
+        // auto &platformDesc = *static_cast<const STM32::CoreInitDescriptor *>(appDesc.platformInitDescriptor);
 
         if (appDesc.systemPriorityLoopPeriod) {
             // SysTickIntRegister(CFXS_SystemPriorityLoop);

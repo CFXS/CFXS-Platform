@@ -1,0 +1,7 @@
+{
+    "files.associations": {
+        "*.ui": "xml",
+        "*.qrc": "xml",
+        "stm32h7xx_hal.h": "c"
+    }
+}
