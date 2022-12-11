@@ -25,7 +25,7 @@
 namespace CFXS::CPU::Registers {
 
     namespace SCB {
-        static auto* VTOR = reinterpret_cast<__rw size_t*>(0xE000ED08);
+        static auto& VTOR = *reinterpret_cast<__rw size_t**>(0xE000ED08);
     }
 
     namespace MPU {

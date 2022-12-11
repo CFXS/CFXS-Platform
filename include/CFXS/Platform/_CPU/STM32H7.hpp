@@ -23,26 +23,41 @@
 namespace CFXS::CPU {
 
     /// Reset CPU
-    static __always_inline __noreturn void Reset() {
+    inline __noreturn void Reset() {
         __mem32(0xE000ED0C) = 0x05FA0000 | 0x00000004;
         while (1 < 2) {
         }
     }
 
     /// Enable global interrupts
-    static __always_inline void EnableInterrupts() {
+    inline void EnableInterrupts() {
         asm("cpsie i" ::: "memory");
     }
 
     /// Disable global interrupts
-    static __always_inline void DisableInterrupts() {
+    inline void DisableInterrupts() {
         asm("cpsid i" ::: "memory");
     }
 
     /// Are global interrupts enabled
     /// \returns true if global interrupts are enabled
-    static __always_inline bool AreInterruptsEnabled() {
+    inline bool AreInterruptsEnabled() {
         return !CFXS::CPU::__GetPRIMASK();
+    }
+
+    /// Set interrupt handler
+    inline void SetInterruptHandler(int offset, CFXS::VoidFunction_t handler) {
+        CFXS_ASSERT(!RAM_VECTOR_TABLE_IS_CACHED, "Not implemented");
+        bool ien = AreInterruptsEnabled();
+        if (ien)
+            DisableInterrupts();
+        if (Registers::SCB::VTOR != RAM_VECTOR_TABLE) {
+            Registers::SCB::VTOR = RAM_VECTOR_TABLE;
+        }
+        memcpy((void*)Registers::SCB::VTOR, (void*)ROM_VECTOR_TABLE, 0x200);
+        ((uint32_t*)*Registers::SCB::VTOR)[offset + 16] = (uint32_t)handler;
+        if (ien)
+            EnableInterrupts();
     }
 
 } // namespace CFXS::CPU

@@ -179,15 +179,16 @@ __interrupt __weak void __cfxs_isr_HardFault(void) {
 }
 
 __interrupt __weak void __cfxs_isr_Unhandled(void) {
-    CFXS_BREAK();
     CFXS::CPU::Reset();
 }
 
+extern void CFXS_SystemPriorityLoop();
 __vector_table const CFXS::STM32::VectorTable_STM32H7x3<&__STACK_START__, __cfxs_reset, __cfxs_isr_Unhandled> g_VectorTable =
     []() constexpr {
     std::remove_cv<decltype(g_VectorTable)>::type vt;
     vt.isr_HardFault = __cfxs_isr_HardFault;
     vt.isr_NMI       = __cfxs_isr_NMI;
+    vt.isr_SysTick   = CFXS_SystemPriorityLoop;
     return vt;
 }
 ();

@@ -34,7 +34,7 @@
 namespace CFXS::CPU {
 
     template<typename T>
-    inline void SafeExec(T&& fn) {
+    inline void NoInterruptScope(T&& fn) {
         bool ien = AreInterruptsEnabled();
         if (ien)
             DisableInterrupts();

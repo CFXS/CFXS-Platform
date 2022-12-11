@@ -29,57 +29,59 @@
     #error Unknown core
 #endif
 
-extern char __RAM_VECTOR_TABLE_START__;  // Address of RAM vector table
-extern char __RAM_VECTOR_TABLE_CACHED__; // Linker defined - if location is cached
+extern char __RAM_VECTOR_TABLE_START__;   // Address of RAM vector table
+extern char __CONST_VECTOR_TABLE_START__; // Address of ROM vector table
+extern char __RAM_VECTOR_TABLE_CACHED__;  // Linker defined - if location is cached
 namespace CFXS::CPU {
 
     static const bool RAM_VECTOR_TABLE_IS_CACHED = &__RAM_VECTOR_TABLE_CACHED__ == (char*)1;
-    static const auto* RAM_VECTOR_TABLE          = reinterpret_cast<__rw size_t*>(&__RAM_VECTOR_TABLE_START__);
+    static auto* RAM_VECTOR_TABLE                = reinterpret_cast<__rw size_t*>(&__RAM_VECTOR_TABLE_START__);
+    static auto* ROM_VECTOR_TABLE                = reinterpret_cast<__rw size_t*>(&__CONST_VECTOR_TABLE_START__);
 
-    /// Set interrupt handler
-    static void SetInterruptHandler(size_t offset, CFXS::VoidFunction_t handler) {
-        CFXS_ASSERT(Registers::SCB::VTOR == RAM_VECTOR_TABLE, "RAM Vector Table not initialized");
-
-        ((uint32_t*)*Registers::SCB::VTOR)[offset + 16] = (uint32_t)handler;
+    /// Read IPSR register
+    inline size_t __GetIPSR() {
+        size_t val;
+        asm volatile("mrs %0, ipsr" : "=r"(val));
+        return val;
     }
 
     /// Read PRIMASK register
-    static __always_inline size_t __GetPRIMASK() {
+    inline size_t __GetPRIMASK() {
         size_t val;
         asm volatile("mrs %0, primask" : "=r"(val));
         return val;
     }
 
     /// Read BASEPRI register
-    static __always_inline size_t __GetBASEPRI() {
+    inline size_t __GetBASEPRI() {
         size_t val;
         asm volatile("mrs %0, basepri" : "=r"(val));
         return val;
     }
 
     /// Read SP register
-    static __always_inline size_t __GetSP() {
+    inline size_t __GetSP() {
         size_t val;
         asm volatile("mrs %0, msp" : "=r"(val));
         return val;
     }
 
     /// Read LR register
-    static __always_inline size_t __GetLR() {
+    inline size_t __GetLR() {
         size_t val;
         asm volatile("mov %0, lr" : "=r"(val));
         return val;
     }
 
     /// Read PC register
-    static __always_inline size_t __GetPC() {
+    inline size_t __GetPC() {
         size_t val;
         asm volatile("mov %0, pc" : "=r"(val));
         return val;
     }
 
     /// Count trailing zeros
-    static __always_inline uint32_t __CTZ(uint32_t x) {
+    inline uint32_t __CTZ(uint32_t x) {
         uint32_t res = 0;
         asm("rbit %[dest], %[val]" : [dest] "=r"(res) : [val] "r"(x));
         asm("clz %[dest], %[val]" : [dest] "=r"(res) : [val] "r"(res));
@@ -87,7 +89,7 @@ namespace CFXS::CPU {
     }
 
     /// Count leading zeros
-    static __always_inline uint32_t __CLZ(uint32_t x) {
+    inline uint32_t __CLZ(uint32_t x) {
         uint32_t res = 0;
         asm("clz %[dest], %[val]" : [dest] "=r"(res) : [val] "r"(res));
         return res;

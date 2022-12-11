@@ -17,8 +17,10 @@
 // ---------------------------------------------------------------------
 // [CFXS] //
 #include <CFXS/Base/Debug.hpp>
+#include <CFXS/Base/Utility.hpp>
 #include <CFXS/Platform/App.hpp>
 #include <CFXS/Platform/STM32/CoreInit.hpp>
+#include <CFXS/Platform/CPU.hpp>
 
 extern void CFXS_SystemPriorityLoop();
 extern void CFXS_HighPriorityLoop();
@@ -26,13 +28,17 @@ extern void CFXS_HighPriorityLoop();
 namespace CFXS::Platform {
 
     void CoreInit(const AppDescriptor &appDesc) {
-        // auto &platformDesc = *static_cast<const STM32::CoreInitDescriptor *>(appDesc.platformInitDescriptor);
+        CFXS_ASSERT(appDesc.platformInitDescriptor, "Platform init descriptor is null");
+        if (appDesc.platformInitDescriptor) {
+            auto &platformDesc = *static_cast<const STM32::CoreInitDescriptor *>(appDesc.platformInitDescriptor);
+            CFXS::SafeCall(platformDesc.systemInit);
+        }
 
         if (appDesc.systemPriorityLoopPeriod) {
-            // SysTickIntRegister(CFXS_SystemPriorityLoop);
-            // SysTickPeriodSet(appDesc.systemPriorityLoopPeriod);
-            // SysTickIntEnable();
-            // SysTickEnable();
+            CFXS_ASSERT(appDesc.systemPriorityLoopPeriod <= 16777216, "Invalid SysTick period");
+            // CFXS::CPU::SetInterruptHandler(-1, CFXS_SystemPriorityLoop);
+            __mem32(0xE000E014) = appDesc.systemPriorityLoopPeriod - 1; // Set period
+            __mem32(0xE000E010) = 0x04 | 0x02 | 0x01;                   // Enable clock source + interrupt + enable systick
         }
 
         if (appDesc.highPriorityLoopPeriod) {

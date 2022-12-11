@@ -154,7 +154,7 @@ namespace CFXS {
         }
 
         Task* task;
-        CFXS::CPU::SafeExec([&]() {
+        CFXS::CPU::NoInterruptScope([&]() {
             task = new Task(group, name, func, Type::PERIODIC, period);
             InsertTask(group, task);
         });
@@ -185,7 +185,7 @@ namespace CFXS {
         }
 
         Task* task;
-        CFXS::CPU::SafeExec([&]() {
+        CFXS::CPU::NoInterruptScope([&]() {
             task = new Task(group, "Queued Task", func, Type::SINGLE_SHOT, delay);
             InsertTask(group, task);
         });

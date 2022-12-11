@@ -22,7 +22,8 @@
 namespace CFXS::STM32 {
 
     struct CoreInitDescriptor {
-        const size_t highPriorityTimer; // Timer index to use for high priority
+        const VoidFunction_t systemInit; // Earliest init function - set up memory regions and other important stuff
+        const size_t highPriorityTimer;  // Timer index to use for high priority
     };
 
 } // namespace CFXS::STM32
