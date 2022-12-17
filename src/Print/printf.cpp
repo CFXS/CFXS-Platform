@@ -41,8 +41,8 @@
 
 #include "printf.hpp"
 
-extern "C" unsigned SEGGER_RTT_Write(unsigned BufferIndex, const void* pBuffer, unsigned NumBytes);
-#define _putchar(x) SEGGER_RTT_Write(0, &x, 1)
+extern int __cfxs_putchar(int c);
+#define _putchar(x) __cfxs_putchar(x)
 
 // define this globally (e.g. gcc -DPRINTF_INCLUDE_CONFIG_H ...) to include the
 // printf_config.h header file

@@ -23,7 +23,6 @@
 #include <CFXS/Platform/CPU.hpp>
 #include <CFXS/Platform/App.hpp>
 #include <CFXS/Platform/Heap/MemoryManager.hpp>
-#include <CFXS/Platform/STM32/VectorTable_STM32H7x3.hpp>
 #include <stm32h7xx_hal_def.h>
 
 /////////////////////////////////////////////////////////////
@@ -174,27 +173,27 @@ extern "C" __interrupt __noreturn __used void __cfxs_reset() {
 ////////////////////////////////////////////////////////////////////////////////////////
 // Overcomplicated Default Vector Table
 
-__interrupt __weak void __cfxs_isr_NMI(void) {
+__interrupt __weak void __cfxs_NMI() {
     CFXS_BREAK();
     CFXS::CPU::Reset();
 }
 
-__interrupt __weak void __cfxs_isr_HardFault(void) {
+__interrupt __weak void __cfxs_HardFault() {
     CFXS_BREAK();
     CFXS::CPU::Reset();
 }
 
-__interrupt __weak void __cfxs_isr_Unhandled(void) {
+__interrupt __weak void __cfxs_Unhandled() {
+    CFXS_BREAK();
     CFXS::CPU::Reset();
 }
 
 extern void CFXS_SystemPriorityLoop();
-__vector_table const CFXS::STM32::VectorTable_STM32H7x3<&__STACK_START__, __cfxs_reset, __cfxs_isr_Unhandled> g_VectorTable =
-    []() constexpr {
+__vector_table const CFXS::CPU::VectorTable<&__STACK_START__, __cfxs_reset, __cfxs_Unhandled> g_VectorTable = []() constexpr {
     std::remove_cv<decltype(g_VectorTable)>::type vt;
-    vt.isr_HardFault = __cfxs_isr_HardFault;
-    vt.isr_NMI       = __cfxs_isr_NMI;
-    vt.isr_SysTick   = CFXS_SystemPriorityLoop;
+    vt._HardFault = __cfxs_HardFault;
+    vt._NMI       = __cfxs_NMI;
+    vt._SysTick   = CFXS_SystemPriorityLoop;
     return vt;
 }
 ();

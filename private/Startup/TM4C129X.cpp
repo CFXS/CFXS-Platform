@@ -25,7 +25,6 @@
 #include <CFXS/Platform/CPU.hpp>
 #include <CFXS/Platform/App.hpp>
 #include <CFXS/Platform/Heap/MemoryManager.hpp>
-#include <CFXS/Platform/Types/Cortex_M/VectorTable_TM4C129X.hpp>
 
 // Empty handler for Tiva lib ASSERT
 extern "C" __weak void __error__(char* pcFilename, uint32_t ui32Line) {
@@ -172,26 +171,25 @@ extern "C" __interrupt __noreturn __used void __cfxs_reset() {
 ////////////////////////////////////////////////////////////////////////////////////////
 // Overcomplicated Default Vector Table
 
-__interrupt __weak void __cfxs_isr_NMI(void) {
+__interrupt __weak void __cfxs_NMI() {
     CFXS_BREAK();
     CFXS::CPU::Reset();
 }
 
-__interrupt __weak void __cfxs_isr_HardFault(void) {
+__interrupt __weak void __cfxs_HardFault() {
     CFXS_BREAK();
     CFXS::CPU::Reset();
 }
 
-__interrupt __weak void __cfxs_isr_Unhandled(void) {
+__interrupt __weak void __cfxs_Unhandled() {
     CFXS_BREAK();
     CFXS::CPU::Reset();
 }
 
-__vector_table const CFXS::Cortex_M::VectorTable_TM4C129X<&__STACK_START__, __cfxs_reset, __cfxs_isr_Unhandled> g_VectorTable =
-    []() constexpr {
+__vector_table const CFXS::Cortex_M::VectorTable<&__STACK_START__, __cfxs_reset, __cfxs_Unhandled> g_VectorTable = []() constexpr {
     std::remove_cv<decltype(g_VectorTable)>::type vt;
-    vt.isr_HardFault = __cfxs_isr_HardFault;
-    vt.isr_NMI       = __cfxs_isr_NMI;
+    vt._HardFault = __cfxs_HardFault;
+    vt._NMI       = __cfxs_NMI;
     return vt;
 }
 ();
