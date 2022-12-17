@@ -11,10 +11,10 @@ file(GLOB_RECURSE headers CONFIGURE_DEPENDS
   "${CMAKE_CURRENT_SOURCE_DIR}/include/*.hpp"
 )
 
-if(${CFXS_STARTUP_PLATFORM} STREQUAL "TM4C129X")
+if("${CFXS_STARTUP_PLATFORM}" STREQUAL "TM4C129X")
   target_sources(${CMAKE_PROJECT_NAME} PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}/private/Startup/TM4C129X.cpp")
   target_sources(${CMAKE_PROJECT_NAME} PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}/private/Platform/TM4C_CoreInit.cpp")
-elseif(${CFXS_STARTUP_PLATFORM} STREQUAL "STM32H7x3")
+elseif("${CFXS_STARTUP_PLATFORM}" STREQUAL "STM32H7x3")
   target_sources(${CMAKE_PROJECT_NAME} PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}/private/Startup/STM32H7x3.cpp")
   target_sources(${CMAKE_PROJECT_NAME} PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}/private/Platform/STM32/STM32H7x3_CoreInit.cpp")
   file(GLOB_RECURSE hal_sources CONFIGURE_DEPENDS
@@ -26,7 +26,7 @@ elseif(${CFXS_STARTUP_PLATFORM} STREQUAL "STM32H7x3")
   list(APPEND sources ${hal_sources})
   list(APPEND headers ${hal_headers})
 else()
-  message(FATAL_ERROR "CFXS-Platform unsupported CFXS_STARTUP_PLATFORM")
+  message(FATAL_ERROR "CFXS-Platform unsupported CFXS_STARTUP_PLATFORM: [${CFXS_STARTUP_PLATFORM}]")
 endif()
 
 set_source_files_properties(${sources} PROPERTIES LANGUAGE CXX)

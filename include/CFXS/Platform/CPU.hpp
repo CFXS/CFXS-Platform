@@ -22,7 +22,7 @@
 #if defined(CFXS_PLATFORM_TM4C)
     #include "_CPU/TM4C.hpp"
 #elif defined(CFXS_PLATFORM_STM32)
-    #if defined(CFXS_DEVICE_CLASS_STM32H7x3)
+    #if defined(STM32H7)
         #include "_CPU/STM32H7.hpp"
     #else
         #error CFXS_DEVICE_CLASS_ not defined

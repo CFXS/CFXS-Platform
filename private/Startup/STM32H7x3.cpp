@@ -24,6 +24,7 @@
 #include <CFXS/Platform/App.hpp>
 #include <CFXS/Platform/Heap/MemoryManager.hpp>
 #include <CFXS/Platform/STM32/VectorTable_STM32H7x3.hpp>
+#include <stm32h7xx_hal_def.h>
 
 /////////////////////////////////////////////////////////////
 // Externals
@@ -84,6 +85,11 @@ __weak __used void __cfxs_entry_point() {
 }
 
 /////////////////////////////////////////////////////////////
+
+// Disable STM32 HAL SysTick
+extern "C" HAL_StatusTypeDef HAL_InitTick(uint32_t TickPriority) {
+    return HAL_OK;
+}
 
 // Default before data init
 __used __weak void __cfxs_init() {
