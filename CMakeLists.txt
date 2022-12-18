@@ -13,7 +13,7 @@ file(GLOB_RECURSE headers CONFIGURE_DEPENDS
 
 if("${CFXS_STARTUP_PLATFORM}" STREQUAL "TM4C129X")
   target_sources(${CMAKE_PROJECT_NAME} PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}/private/Startup/TM4C129X.cpp")
-  target_sources(${CMAKE_PROJECT_NAME} PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}/private/Platform/TM4C_CoreInit.cpp")
+  target_sources(${CMAKE_PROJECT_NAME} PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}/private/Platform/TM4C/TM4C_CoreInit.cpp")
 elseif("${CFXS_STARTUP_PLATFORM}" STREQUAL "STM32H7x3")
   target_sources(${CMAKE_PROJECT_NAME} PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}/private/Startup/STM32H7x3.cpp")
   target_sources(${CMAKE_PROJECT_NAME} PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}/private/Platform/STM32/STM32H7x3_CoreInit.cpp")

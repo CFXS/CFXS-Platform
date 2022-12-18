@@ -32,11 +32,11 @@
 
 extern char __RAM_VECTOR_TABLE_START__;   // Address of RAM vector table
 extern char __CONST_VECTOR_TABLE_START__; // Address of ROM vector table
-extern char __RAM_VECTOR_TABLE_CACHED__;  // Linker defined - if location is cached
+
 namespace CFXS::CPU {
-    static const bool RAM_VECTOR_TABLE_IS_CACHED = &__RAM_VECTOR_TABLE_CACHED__ == (char*)1;
-    static auto* RAM_VECTOR_TABLE                = reinterpret_cast<__rw size_t*>(&__RAM_VECTOR_TABLE_START__);
-    static auto* ROM_VECTOR_TABLE                = reinterpret_cast<__rw size_t*>(&__CONST_VECTOR_TABLE_START__);
+
+    static auto* RAM_VECTOR_TABLE = reinterpret_cast<__rw size_t*>(&__RAM_VECTOR_TABLE_START__);
+    static auto* ROM_VECTOR_TABLE = reinterpret_cast<__rw size_t*>(&__CONST_VECTOR_TABLE_START__);
 
     /// Read IPSR register
     inline size_t __GetIPSR() {

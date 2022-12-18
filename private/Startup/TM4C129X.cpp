@@ -186,7 +186,7 @@ __interrupt __weak void __cfxs_Unhandled() {
     CFXS::CPU::Reset();
 }
 
-__vector_table const CFXS::Cortex_M::VectorTable<&__STACK_START__, __cfxs_reset, __cfxs_Unhandled> g_VectorTable = []() constexpr {
+__vector_table const CFXS::CPU::VectorTable<&__STACK_START__, __cfxs_reset, __cfxs_Unhandled> g_VectorTable = []() constexpr {
     std::remove_cv<decltype(g_VectorTable)>::type vt;
     vt._HardFault = __cfxs_HardFault;
     vt._NMI       = __cfxs_NMI;
