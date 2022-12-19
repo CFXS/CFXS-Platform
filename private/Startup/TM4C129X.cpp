@@ -28,7 +28,8 @@
 
 // Empty handler for Tiva lib ASSERT
 extern "C" __weak void __error__(char* pcFilename, uint32_t ui32Line) {
-    asm volatile("bkpt");
+    // asm volatile("bkpt");
+    CFXS_printf(ANSI_RED "driverlib assert \"%s\":%lu\n", pcFilename, ui32Line);
 }
 
 /////////////////////////////////////////////////////////////
@@ -189,7 +190,10 @@ __interrupt __weak void __cfxs_Unhandled() {
 __vector_table const CFXS::CPU::VectorTable<&__STACK_START__, __cfxs_reset, __cfxs_Unhandled> g_VectorTable = []() constexpr {
     std::remove_cv<decltype(g_VectorTable)>::type vt;
     vt._HardFault = __cfxs_HardFault;
-    vt._NMI       = __cfxs_NMI;
+    // vt._MemManage_Fault = __cfxs_HardFault;
+    // vt._BusFault        = __cfxs_HardFault;
+    // vt._UsageFault      = __cfxs_HardFault;
+    vt._NMI = __cfxs_NMI;
     return vt;
 }
 ();

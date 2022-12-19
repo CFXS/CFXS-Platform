@@ -192,8 +192,11 @@ extern void CFXS_SystemPriorityLoop();
 __vector_table const CFXS::CPU::VectorTable<&__STACK_START__, __cfxs_reset, __cfxs_Unhandled> g_VectorTable = []() constexpr {
     std::remove_cv<decltype(g_VectorTable)>::type vt;
     vt._HardFault = __cfxs_HardFault;
-    vt._NMI       = __cfxs_NMI;
-    vt._SysTick   = CFXS_SystemPriorityLoop;
+    // vt._MemManage_Fault = __cfxs_HardFault;
+    // vt._BusFault        = __cfxs_HardFault;
+    // vt._UsageFault      = __cfxs_HardFault;
+    vt._NMI     = __cfxs_NMI;
+    vt._SysTick = CFXS_SystemPriorityLoop;
     return vt;
 }
 ();
