@@ -156,7 +156,7 @@ __weak void __cfxs_startup() {
 }
 
 // Startup entry point (extern "C" for LinkerScript ENTRY)
-extern "C" __interrupt __noreturn __used void __cfxs_reset() {
+ extern "C" __interrupt __noreturn __used void __cfxs_reset() {
     __cfxs_startup();
     CFXS::CPU::DisableInterrupts();
 
