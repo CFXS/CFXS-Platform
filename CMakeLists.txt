@@ -50,6 +50,12 @@ target_compile_definitions(CFXS_Platform PUBLIC
   "EASTL_RTTI_ENABLED=0"
 )
 
+target_compile_options(
+  CFXS_Platform
+  PRIVATE
+  -Wno-strict-aliasing
+)
+
 target_precompile_headers(
   CFXS_Platform
   PUBLIC
