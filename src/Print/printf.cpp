@@ -373,9 +373,9 @@ static size_t _ftoa(out_fct_type out,
     // test for special values
     if (value != value)
         return _out_rev(out, buffer, idx, maxlen, "nan", 3, width, flags);
-    if (value < -DBL_MAX)
+    if (value < -FP_MAX)
         return _out_rev(out, buffer, idx, maxlen, "fni-", 4, width, flags);
-    if (value > DBL_MAX)
+    if (value > FP_MAX)
         return _out_rev(out, buffer, idx, maxlen, (flags & FLAGS_PLUS) ? "fni+" : "fni", (flags & FLAGS_PLUS) ? 4U : 3U, width, flags);
 
     // test for very large values
@@ -492,7 +492,7 @@ static size_t _etoa(out_fct_type out,
                     unsigned int width,
                     unsigned int flags) {
     // check for NaN and special values
-    if ((value != value) || (value > DBL_MAX) || (value < -DBL_MAX)) {
+    if ((value != value) || (value > FP_MAX) || (value < -FP_MAX)) {
         return _ftoa(out, buffer, idx, maxlen, value, prec, width, flags);
     }
 
@@ -596,6 +596,16 @@ static size_t _etoa(out_fct_type out,
 }
     #endif // PRINTF_SUPPORT_EXPONENTIAL
 #endif     // PRINTF_SUPPORT_FLOAT
+
+template<typename T>
+static T void_to(void* vp) {
+    union {
+        T val;
+        void* _vp;
+    } conv;
+    conv._vp = vp;
+    return conv.val;
+}
 
 // internal vsnprintf
 static int _vsnprintf(out_fct_type out, char* buffer, const size_t maxlen, const char* format, va_list va) {
@@ -783,10 +793,9 @@ static int _vsnprintf(out_fct_type out, char* buffer, const size_t maxlen, const
                                          width,
                                          flags);
                     } else {
-                        const int value = (flags & FLAGS_CHAR)  ? (char)va_arg(va, int) :
-                                          (flags & FLAGS_SHORT) ? (short int)va_arg(va, int) :
-                                                                  va_arg(va, int);
-                        idx             = _ntoa_long(out,
+                        const int value = (flags & FLAGS_CHAR) ? (char)va_arg(va, int) :
+                                                                 (flags & FLAGS_SHORT) ? (short int)va_arg(va, int) : va_arg(va, int);
+                        idx = _ntoa_long(out,
                                          buffer,
                                          idx,
                                          maxlen,
@@ -807,10 +816,11 @@ static int _vsnprintf(out_fct_type out, char* buffer, const size_t maxlen, const
                     } else if (flags & FLAGS_LONG) {
                         idx = _ntoa_long(out, buffer, idx, maxlen, va_arg(va, unsigned long), false, base, precision, width, flags);
                     } else {
-                        const unsigned int value = (flags & FLAGS_CHAR)  ? (unsigned char)va_arg(va, unsigned int) :
-                                                   (flags & FLAGS_SHORT) ? (unsigned short int)va_arg(va, unsigned int) :
-                                                                           va_arg(va, unsigned int);
-                        idx                      = _ntoa_long(out, buffer, idx, maxlen, value, false, base, precision, width, flags);
+                        const unsigned int value =
+                            (flags & FLAGS_CHAR) ?
+                                (unsigned char)va_arg(va, unsigned int) :
+                                (flags & FLAGS_SHORT) ? (unsigned short int)va_arg(va, unsigned int) : va_arg(va, unsigned int);
+                        idx = _ntoa_long(out, buffer, idx, maxlen, value, false, base, precision, width, flags);
                     }
                 }
                 format++;
@@ -821,7 +831,15 @@ static int _vsnprintf(out_fct_type out, char* buffer, const size_t maxlen, const
             case 'F':
                 if (*format == 'F')
                     flags |= FLAGS_UPPERCASE;
-                idx = _ftoa(out, buffer, idx, maxlen, va_arg(va, PRINTF_FLOAT_TYPE), precision, width, flags);
+                idx = _ftoa(out,
+                            buffer,
+                            idx,
+                            maxlen,
+                            void_to<float>(va_arg(va, void*)),
+                            // void_to<float>(va_arg(va, void*)),
+                            precision,
+                            width,
+                            flags); // XXX: CHECK IF CHANGING va_arg FLOAT TO SIZE_T BREAKS ANYTHING!!!
                 format++;
                 break;
     #if defined(PRINTF_SUPPORT_EXPONENTIAL)
@@ -833,7 +851,7 @@ static int _vsnprintf(out_fct_type out, char* buffer, const size_t maxlen, const
                     flags |= FLAGS_ADAPT_EXP;
                 if ((*format == 'E') || (*format == 'G'))
                     flags |= FLAGS_UPPERCASE;
-                idx = _etoa(out, buffer, idx, maxlen, va_arg(va, PRINTF_FLOAT_TYPE), precision, width, flags);
+                idx = _etoa(out, buffer, idx, maxlen, va_arg(va, double), precision, width, flags);
                 format++;
                 break;
     #endif // PRINTF_SUPPORT_EXPONENTIAL

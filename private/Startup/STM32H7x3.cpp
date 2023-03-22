@@ -157,7 +157,7 @@ __weak void __cfxs_startup() {
 }
 
 // Startup entry point (extern "C" for LinkerScript ENTRY)
-extern "C" __interrupt __noreturn __used void __cfxs_reset() {
+extern "C" __noreturn __used void __cfxs_reset() {
     __cfxs_startup();
     CFXS::CPU::DisableInterrupts();
 
@@ -173,17 +173,17 @@ extern "C" __interrupt __noreturn __used void __cfxs_reset() {
 ////////////////////////////////////////////////////////////////////////////////////////
 // Overcomplicated Default Vector Table
 
-__interrupt __weak void __cfxs_NMI() {
+__weak void __cfxs_NMI() {
     CFXS_BREAK();
     CFXS::CPU::Reset();
 }
 
-__interrupt __weak void __cfxs_HardFault() {
+__weak void __cfxs_HardFault() {
     CFXS_BREAK();
     CFXS::CPU::Reset();
 }
 
-__interrupt __weak void __cfxs_Unhandled() {
+__weak void __cfxs_Unhandled() {
     CFXS_BREAK();
     CFXS::CPU::Reset();
 }

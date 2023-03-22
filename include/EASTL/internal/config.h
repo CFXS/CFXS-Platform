@@ -1782,9 +1782,11 @@ typedef EASTL_SSIZE_T eastl_ssize_t; // Signed version of eastl_size_t. Concept 
 
 		// Disabling the Clang/GCC/MSVC warning about using user defined literals without a leading '_' as they are
 		// reserved for standard libary usage.
+// clang-format off
 		EA_DISABLE_CLANG_WARNING(-Wuser-defined-literals)
 		EA_DISABLE_CLANG_WARNING(-Wreserved-user-defined-literal)
 		EA_DISABLE_GCC_WARNING(-Wliteral-suffix)
+// clang-format on
 		#ifdef _MSC_VER
 			#pragma warning(disable: 4455) // disable warning C4455: literal suffix identifiers that do not start with an underscore are reserved
 		#endif

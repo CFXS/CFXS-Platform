@@ -1,0 +1,19 @@
+{
+    "files.associations": {
+        "*.ui": "xml",
+        "*.qrc": "xml",
+        "chrono": "cpp",
+        "xstring": "cpp",
+        "array": "cpp",
+        "compare": "cpp",
+        "format": "cpp",
+        "memory": "cpp",
+        "ratio": "cpp",
+        "tuple": "cpp",
+        "type_traits": "cpp",
+        "utility": "cpp",
+        "xmemory": "cpp",
+        "xtr1common": "cpp",
+        "xutility": "cpp"
+    }
+}
