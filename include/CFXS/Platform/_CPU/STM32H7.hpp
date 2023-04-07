@@ -22,6 +22,10 @@
 
 namespace CFXS::CPU {
 
+    static __always_inline bool IsDebugEnabled() {
+        return __mem32(0xE000EDF0) & 1;
+    }
+
     /// Reset CPU
     inline __noreturn void Reset() {
         __mem32(0xE000ED0C) = 0x05FA0000 | 0x00000004;

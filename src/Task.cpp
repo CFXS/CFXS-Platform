@@ -154,10 +154,11 @@ namespace CFXS {
         }
 
         Task* task;
-        CFXS::CPU::NoInterruptScope([&]() {
+        {
+            CFXS::CPU::NoInterruptScope _;
             task = new Task(group, name, func, Type::PERIODIC, period);
             InsertTask(group, task);
-        });
+        }
 
         if (task) {
             task->m_ProcessTime = 0;
@@ -185,10 +186,11 @@ namespace CFXS {
         }
 
         Task* task;
-        CFXS::CPU::NoInterruptScope([&]() {
+        {
+            CFXS::CPU::NoInterruptScope _;
             task = new Task(group, "Queued Task", func, Type::SINGLE_SHOT, delay);
             InsertTask(group, task);
-        });
+        }
 
         task->m_Enabled = true;
 

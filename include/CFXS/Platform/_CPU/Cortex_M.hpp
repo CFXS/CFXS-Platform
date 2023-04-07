@@ -99,18 +99,28 @@ namespace CFXS::CPU {
     void __naked BlockingCycles(uint32_t cycles);
 
     /// Block for x miroseconds
-    void __always_inline BlockingMicroseconds(uint32_t usec) { BlockingCycles(usec * GetCyclesPerMicrosecond() / 3); }
+    void __always_inline BlockingMicroseconds(uint32_t usec) {
+        BlockingCycles(usec * GetCyclesPerMicrosecond() / 3);
+    }
 
     /// Block for x milliseconds
-    void __always_inline BlockingMilliseconds(uint32_t ms) { BlockingCycles(ms * GetCyclesPerMillisecond() / 3); }
+    void __always_inline BlockingMilliseconds(uint32_t ms) {
+        BlockingCycles(ms * GetCyclesPerMillisecond() / 3);
+    }
 
     /// Enable cycle counter (DWT_CTRL)
-    void __always_inline EnableCycleCounter() { Registers::DWT::DWT_CTRL->CYCCNTENA = true; }
+    void __always_inline EnableCycleCounter() {
+        Registers::DWT::DWT_CTRL.CYCCNTENA = true;
+    }
 
     /// Disable cycle counter (DWT_CTRL)
-    void __always_inline DisableCycleCounter() { Registers::DWT::DWT_CTRL->CYCCNTENA = false; }
+    void __always_inline DisableCycleCounter() {
+        Registers::DWT::DWT_CTRL.CYCCNTENA = false;
+    }
 
     /// Get cycle count (DWT_CYCCNT)
-    size_t __always_inline GetCycleCount() { return Registers::DWT::DWT_CYCCNT->CYCCNT; }
+    size_t __always_inline GetCycleCount() {
+        return Registers::DWT::DWT_CYCCNT.CYCCNT;
+    }
 
 } // namespace CFXS::CPU

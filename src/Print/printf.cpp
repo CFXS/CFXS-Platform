@@ -835,8 +835,8 @@ static int _vsnprintf(out_fct_type out, char* buffer, const size_t maxlen, const
                             buffer,
                             idx,
                             maxlen,
-                            void_to<float>(va_arg(va, void*)),
                             // void_to<float>(va_arg(va, void*)),
+                            va_arg(va, double),
                             precision,
                             width,
                             flags); // XXX: CHECK IF CHANGING va_arg FLOAT TO SIZE_T BREAKS ANYTHING!!!

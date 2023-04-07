@@ -33,14 +33,20 @@
 
 namespace CFXS::CPU {
 
-    template<typename T>
-    inline void NoInterruptScope(T&& fn) {
-        bool ien = AreInterruptsEnabled();
-        if (ien)
-            DisableInterrupts();
-        fn();
-        if (ien)
-            EnableInterrupts();
-    }
+    /// @brief Stack object that disables interrupts for the lifetime of the current scope
+    class NoInterruptScope {
+    public:
+        NoInterruptScope() : m_InterruptsEnabled(AreInterruptsEnabled()) {
+            if (m_InterruptsEnabled)
+                DisableInterrupts();
+        }
+        ~NoInterruptScope() {
+            if (m_InterruptsEnabled)
+                EnableInterrupts();
+        }
+
+    private:
+        bool m_InterruptsEnabled;
+    };
 
 } // namespace CFXS::CPU
