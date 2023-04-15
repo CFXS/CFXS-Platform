@@ -24,6 +24,8 @@
 #elif defined(CFXS_PLATFORM_STM32)
     #if defined(STM32H7)
         #include "_CPU/STM32H7.hpp"
+    #elif defined(STM32G4)
+        #include "_CPU/STM32G4.hpp"
     #else
         #error CFXS_DEVICE_CLASS_ not defined
     #endif

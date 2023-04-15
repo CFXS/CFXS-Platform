@@ -25,6 +25,17 @@ elseif("${CFXS_STARTUP_PLATFORM}" STREQUAL "STM32H7x3")
   )
   list(APPEND sources ${hal_sources})
   list(APPEND headers ${hal_headers})
+elseif("${CFXS_STARTUP_PLATFORM}" STREQUAL "STM32G4x3")
+    target_sources(${CMAKE_PROJECT_NAME} PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}/private/Startup/STM32G4x3.cpp")
+    target_sources(${CMAKE_PROJECT_NAME} PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}/private/Platform/STM32/STM32G4x3_CoreInit.cpp")
+    file(GLOB_RECURSE hal_sources CONFIGURE_DEPENDS
+      "${CMAKE_CURRENT_SOURCE_DIR}/private/Platform/STM32/STM32G4xx_HAL/*.c"
+    )
+    file(GLOB_RECURSE hal_headers CONFIGURE_DEPENDS
+      "${CMAKE_CURRENT_SOURCE_DIR}/private/Platform/STM32/STM32G4xx_HAL/*.h"
+    )
+    list(APPEND sources ${hal_sources})
+    list(APPEND headers ${hal_headers})
 else()
   message(FATAL_ERROR "CFXS-Platform unsupported CFXS_STARTUP_PLATFORM: [${CFXS_STARTUP_PLATFORM}]")
 endif()
@@ -42,6 +53,9 @@ endif()
 if(${CFXS_STARTUP_PLATFORM} STREQUAL "STM32H7x3")
   target_include_directories(CFXS_Platform PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/private/Platform/STM32/STM32H7xx_HAL/include)
   target_include_directories(CFXS_Platform PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/private/Platform/STM32/STM32H7xx/Include)
+elseif(${CFXS_STARTUP_PLATFORM} STREQUAL "STM32G4x3")
+  target_include_directories(CFXS_Platform PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/private/Platform/STM32/STM32G4xx_HAL/include)
+  target_include_directories(CFXS_Platform PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/private/Platform/STM32/STM32G4xx/Include)
 endif()
 
 target_compile_definitions(CFXS_Platform PUBLIC
