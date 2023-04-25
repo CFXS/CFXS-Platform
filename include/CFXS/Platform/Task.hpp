@@ -25,7 +25,7 @@ namespace CFXS {
 
     using TaskFunction = Function<void(void* userData)>;
     class Task {
-        enum class Type : uint32_t { SINGLE_SHOT, PERIODIC };
+        enum class Type : uint8_t { SINGLE_SHOT, PERIODIC };
 
     public:
         static constexpr auto MAX_GROUP_INDEX = 8;
@@ -115,15 +115,21 @@ namespace CFXS {
         }
 
         constexpr const char* GetName() const {
+#if CFXS_TASK_NAME_FIELD == 1
             return m_Name;
+#else
+            return "N/A";
+#endif
         }
 
     private:
         Task(Group_t group, const char* name, const TaskFunction& func, Type type, Time_t period = 0);
 
     private:
-        Group_t m_Group;
+#if CFXS_TASK_NAME_FIELD == 1
         const char* m_Name;
+#endif
+        Group_t m_Group;
         TaskFunction m_Function;
         Time_t m_ProcessTime;
         Time_t m_Period;

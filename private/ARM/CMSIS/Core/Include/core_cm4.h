@@ -1967,6 +1967,22 @@ __STATIC_INLINE uint32_t ITM_SendChar(uint32_t ch) {
     return (ch);
 }
 
+extern "C++" {
+template<size_t PORT_ID>
+__STATIC_INLINE uint32_t ITM_SendChar(uint32_t ch) {
+    static_assert(PORT_ID < 32, "Port ID out of range");
+    if (((ITM->TCR & ITM_TCR_ITMENA_Msk) != 0UL) && /* ITM enabled */
+        ((ITM->TER & (1 << PORT_ID)) != 0UL))       /* ITM Port #0 enabled */
+    {
+        while (ITM->PORT[PORT_ID].u32 == 0UL) {
+            __NOP();
+        }
+        ITM->PORT[PORT_ID].u8 = (uint8_t)ch;
+    }
+    return (ch);
+}
+}
+
 /**
   \brief   ITM Receive Character
   \details Inputs a character via the external variable \ref ITM_RxBuffer.

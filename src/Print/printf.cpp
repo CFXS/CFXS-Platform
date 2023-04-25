@@ -41,6 +41,12 @@
 
 #include "printf.hpp"
 
+#define PRINTF_FLOAT_TYPE float
+#define FLOAT_CAST(x)     ((PRINTF_FLOAT_TYPE)x)
+#define FP_MAX            FLT_MAX
+#define PRINTF_DISABLE_SUPPORT_EXPONENTIAL
+#define PRINTF_DISABLE_SUPPORT_PTRDIFF_T
+
 extern int __cfxs_putchar(int c);
 #define _putchar(x) __cfxs_putchar(x)
 
@@ -365,7 +371,7 @@ static size_t _ftoa(out_fct_type out,
                     unsigned int flags) {
     char buf[PRINTF_FTOA_BUFFER_SIZE];
     size_t len             = 0U;
-    PRINTF_FLOAT_TYPE diff = 0.0;
+    PRINTF_FLOAT_TYPE diff = FLOAT_CAST(0.0);
 
     // powers of 10
     static const PRINTF_FLOAT_TYPE pow10[] = {1, 10, 100, 1000, 10000, 100000, 1000000, 10000000, 100000000, 1000000000};
@@ -410,14 +416,14 @@ static size_t _ftoa(out_fct_type out,
     unsigned long frac    = (unsigned long)tmp;
     diff                  = tmp - frac;
 
-    if (diff > 0.5) {
+    if (diff > FLOAT_CAST(0.5)) {
         ++frac;
-        // handle rollover, e.g. case 0.99 with prec 1 is 1.0
+        // handle rollover, e.g. case FLOAT_CAST(0.99) with prec 1 is FLOAT_CAST(1.0)
         if (frac >= pow10[prec]) {
             frac = 0;
             ++whole;
         }
-    } else if (diff < 0.5) {
+    } else if (diff < FLOAT_CAST(0.5)) {
     } else if ((frac == 0U) || (frac & 1U)) {
         // if halfway, round up if odd OR if last digit is 0
         ++frac;
@@ -425,9 +431,9 @@ static size_t _ftoa(out_fct_type out,
 
     if (prec == 0U) {
         diff = value - (PRINTF_FLOAT_TYPE)whole;
-        if ((!(diff < 0.5) || (diff > 0.5)) && (whole & 1)) {
-            // exactly 0.5 and ODD, then round up
-            // 1.5 -> 2, but 2.5 -> 2
+        if ((!(diff < FLOAT_CAST(0.5)) || (diff > FLOAT_CAST(0.5))) && (whole & 1)) {
+            // exactly FLOAT_CAST(0.5) and ODD, then round up
+            // FLOAT_CAST(1.5) -> 2, but FLOAT_CAST(2.5) -> 2
             ++whole;
         }
     } else {
@@ -517,11 +523,12 @@ static size_t _etoa(out_fct_type out,
     conv.F   = value;
     int exp2 = (int)((conv.U >> 52U) & 0x07FFU) - 1023;            // effectively log2
     conv.U   = (conv.U & ((1ULL << 52U) - 1U)) | (1023ULL << 52U); // drop the exponent so conv.F is now in [1,2)
-    // now approximate log10 from the log2 integer part and an expansion of ln around 1.5
-    int expval = (int)(0.1760912590558 + exp2 * 0.301029995663981 + (conv.F - 1.5) * 0.289529654602168);
+    // now approximate log10 from the log2 integer part and an expansion of ln around FLOAT_CAST(1.5)
+    int expval = (int)(FLOAT_CAST(0.1760912590558) + exp2 * FLOAT_CAST(0.301029995663981) +
+                       (conv.F - FLOAT_CAST(1.5)) * FLOAT_CAST(0.289529654602168));
     // now we want to compute 10^expval but we want to be sure it won't overflow
-    exp2                       = (int)(expval * 3.321928094887362 + 0.5);
-    const PRINTF_FLOAT_TYPE z  = expval * 2.302585092994046 - exp2 * 0.6931471805599453;
+    exp2                       = (int)(expval * FLOAT_CAST(3.321928094887362) + FLOAT_CAST(0.5));
+    const PRINTF_FLOAT_TYPE z  = expval * FLOAT_CAST(2.302585092994046) - exp2 * FLOAT_CAST(0.6931471805599453);
     const PRINTF_FLOAT_TYPE z2 = z * z;
     conv.U                     = (uint64_t)(exp2 + 1023) << 52U;
     // compute exp(z) using continued fractions, see https://en.wikipedia.org/wiki/Exponential_function#Continued_fractions_for_ex

@@ -39,11 +39,6 @@
 extern "C" {
 #endif
 
-#define PRINTF_FLOAT_TYPE float
-#define FP_MAX            FLT_MAX
-#define PRINTF_DISABLE_SUPPORT_EXPONENTIAL
-#define PRINTF_DISABLE_SUPPORT_PTRDIFF_T
-
 /**
  * Tiny printf implementation
  * You have to implement _putchar if you use printf()

@@ -1,22 +1,23 @@
 // ---------------------------------------------------------------------
 // CFXS Framework Platform Module <https://github.com/CFXS/CFXS-Platform>
 // Copyright (C) 2022 | CFXS / Rihards Veips
-// 
+//
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
 // the Free Software Foundation, either version 3 of the License, or
 // (at your option) any later version.
-// 
+//
 // This program is distributed in the hope that it will be useful,
 // but WITHOUT ANY WARRANTY; without even the implied warranty of
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
 // GNU General Public License for more details.
-// 
+//
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>
 // ---------------------------------------------------------------------
 // [CFXS] //
 #pragma once
+#include <cstdint>
 
 namespace CFXS::CPU::Types {
 
@@ -69,7 +70,7 @@ namespace CFXS::CPU::Types {
         uint8_t SRD : 8;        // Subregion disable bits
         uint8_t B : 1;
         uint8_t C : 1;
-        uint8_t S : 1; // Shareable
+        uint8_t S : 1;          // Shareable
         uint8_t TEX : 3;
         uint8_t _reserved1 : 2; // Reserved
         uint8_t AP : 3;         // Access permissions

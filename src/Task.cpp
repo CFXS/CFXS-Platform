@@ -210,7 +210,14 @@ namespace CFXS {
     // Member
 
     Task::Task(Group_t group, const char* name, const TaskFunction& func, Type type, Time_t period) :
-        m_Group(group), m_Name(name), m_Function(func), m_ProcessTime(Time::ms + period), m_Period(period), m_Type(type) {
+#if CFXS_TASK_NAME_FIELD == 1
+        m_Name(name),
+#endif
+        m_Group(group),
+        m_Function(func),
+        m_ProcessTime(Time::ms + period),
+        m_Period(period),
+        m_Type(type) {
     }
 
     const TaskFunction& Task::GetFunction() const {
