@@ -107,7 +107,9 @@ EA_DISABLE_ALL_VC_WARNINGS()
 // clang-format off
 EA_DISABLE_GCC_WARNING(-Wtype-limits)
 // clang-format on
-#include <wchar.h>
+#ifdef EA_ENABLE_WCHAR
+    #include <wchar.h>
+#endif
 EA_RESTORE_GCC_WARNING()
 
 #include <string.h> // strlen, etc.
@@ -1961,7 +1963,7 @@ namespace eastl {
             EASTL_FAIL_MSG("basic_string::insert -- invalid position");
 #endif
 
-        if (n) // If there is anything to insert...
+        if (n)                                                // If there is anything to insert...
         {
             if (internalLayout().GetRemainingCapacity() >= n) // If we have enough capacity...
             {
@@ -2335,14 +2337,14 @@ namespace eastl {
         const size_type nLength1 = (size_type)(pEnd1 - pBegin1);
         const size_type nLength2 = (size_type)(pEnd2 - pBegin2);
 
-        if (nLength1 >= nLength2) // If we have a non-expanding operation...
+        if (nLength1 >= nLength2)                        // If we have a non-expanding operation...
         {
             if ((pBegin2 > pEnd1) || (pEnd2 <= pBegin1)) // If we have a non-overlapping operation...
                 memcpy(const_cast<value_type*>(pBegin1), pBegin2, (size_t)(pEnd2 - pBegin2) * sizeof(value_type));
             else
                 memmove(const_cast<value_type*>(pBegin1), pBegin2, (size_t)(pEnd2 - pBegin2) * sizeof(value_type));
             erase(pBegin1 + nLength2, pEnd1);
-        } else // Else we are expanding.
+        } else                                           // Else we are expanding.
         {
             if ((pBegin2 > pEnd1) || (pEnd2 <= pBegin1)) // If we have a non-overlapping operation...
             {
@@ -2397,7 +2399,7 @@ namespace eastl {
         {
             // We leave mAllocator as-is.
             eastl::swap(internalLayout(), x.internalLayout());
-        } else // else swap the contents.
+        } else                           // else swap the contents.
         {
             const this_type temp(*this); // Can't call eastl::swap because that would
             *this = x;                   // itself call this member swap function.

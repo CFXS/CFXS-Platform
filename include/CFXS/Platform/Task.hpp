@@ -25,11 +25,11 @@ namespace CFXS {
 
     using TaskFunction = Function<void(void* userData)>;
     class Task {
-        enum class Type : uint8_t { SINGLE_SHOT, PERIODIC };
+        enum Type : uint8_t { SINGLE_SHOT, PERIODIC };
 
     public:
         static constexpr auto MAX_GROUP_INDEX = 8;
-        using Group_t                         = uint32_t;
+        using Group_t                         = uint8_t;
 
         /////////////////////////////////////////////////////////////////////////////
         /// Enable processing
@@ -64,7 +64,7 @@ namespace CFXS {
         /// \param func function to queue
         /// \param period trigger period in ms
         /// \return Task* - pointer to created task or nullptr if creation failed
-        static Task* Create(Group_t group, const char* name, const TaskFunction& func, Time_t period);
+        static Task* Create(Group_t group, const char* name, const TaskFunction& func, uint32_t period);
 
         /////////////////////////////////////////////////////////////////////////////
         /// Queue single shot task
@@ -72,7 +72,7 @@ namespace CFXS {
         /// \param func function to queue
         /// \param delay trigger delay from current timestamp
         /// \return bool - true if queued successfully
-        static bool Queue(Group_t group, const TaskFunction& func, Time_t delay = 0);
+        static bool Queue(Group_t group, const TaskFunction& func, uint32_t delay = 0);
 
         /////////////////////////////////////////////////////////////////////////////
         /// Get task currently being processed
@@ -80,13 +80,21 @@ namespace CFXS {
         /// \return Task* - pointer to current task being processed
         static Task* GetCurrentTask(Group_t group);
 
-        const TaskFunction& GetFunction() const;
+        const TaskFunction& GetFunction() const {
+            return m_Function;
+        }
 
-        Group_t GetGroup() const;
+        Group_t GetGroup() const {
+            return m_Group;
+        }
         void SetGroup(Group_t group);
 
-        Group_t GetPeriod() const;
-        void SetPeriod(Time_t period);
+        uint32_t GetPeriod() const {
+            return m_Period;
+        }
+        void SetPeriod(uint32_t period) {
+            m_Period = period;
+        }
 
         void Delete() {
             m_Delete = true;
@@ -123,19 +131,19 @@ namespace CFXS {
         }
 
     private:
-        Task(Group_t group, const char* name, const TaskFunction& func, Type type, Time_t period = 0);
+        Task(Group_t group, const char* name, const TaskFunction& func, Type type, uint32_t period = 0);
 
     private:
 #if CFXS_TASK_NAME_FIELD == 1
         const char* m_Name;
 #endif
         Group_t m_Group;
-        TaskFunction m_Function;
-        Time_t m_ProcessTime;
-        Time_t m_Period;
         Type m_Type;
         bool m_Enabled = false;
         bool m_Delete  = false;
+        TaskFunction m_Function;
+        Time_t m_ProcessTime;
+        uint32_t m_Period;
     };
 
 } // namespace CFXS

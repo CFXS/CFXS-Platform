@@ -20,6 +20,7 @@
 #include <CFXS/Platform/CPU.hpp>
 #include <CFXS/Base/Debug.hpp>
 #include <CFXS/Base/Time.hpp>
+#include <array>
 
 namespace CFXS {
 
@@ -38,12 +39,19 @@ namespace CFXS {
     ////////////////////////////////////////////////////////////////////////////////////////////////////
 
     static bool GroupExists(Group_t group) {
-        CFXS_ASSERT(group < Task::MAX_GROUP_INDEX, "Invalid task group index");
+        if (group >= Task::MAX_GROUP_INDEX) {
+            CFXS_ERROR("Invalid task group index");
+            return false;
+        }
         return s_TaskGroups[group].exists;
     }
 
     static bool GroupFull(Group_t group) {
-        CFXS_ASSERT(group < Task::MAX_GROUP_INDEX, "Invalid task group index");
+        if (group >= Task::MAX_GROUP_INDEX) {
+            CFXS_ERROR("Invalid task group index");
+            return false;
+        }
+
         auto& taskGroup = s_TaskGroups[group];
         for (auto i = 0; i < taskGroup.capacity; i++) {
             if (taskGroup.tasks[i] == nullptr)
@@ -71,7 +79,7 @@ namespace CFXS {
         }
 
         if (GroupExists(group)) {
-            CFXS_ERROR("[Task] Group %lu already exists", group);
+            CFXS_ERROR("[Task] Group %u already exists", group);
             return false;
         } else {
             auto& taskGroup = s_TaskGroups[group];
@@ -80,10 +88,10 @@ namespace CFXS {
                 memset(taskGroup.tasks, 0, sizeof(Task*) * capacity);
                 taskGroup.capacity = capacity;
                 taskGroup.exists   = true;
-                CFXS_printf("[Task] Added task group %lu with capacity %u\t[task array @ %p]\n", group, capacity, taskGroup.tasks);
+                CFXS_printf("[Task] Added task group %u with capacity %u\t[task array @ %p]\n", group, capacity, taskGroup.tasks);
                 return true;
             } else {
-                CFXS_ERROR("Failed to create task group %lu with capacity %u", group, capacity);
+                CFXS_ERROR("Failed to create task group %u with capacity %u", group, capacity);
                 return false;
             }
         }
@@ -96,7 +104,7 @@ namespace CFXS {
         }
 
         if (!GroupExists(group)) {
-            CFXS_ERROR("[Task] Group %lu does not exist", group);
+            CFXS_ERROR("[Task] Group %u does not exist", group);
             return;
         }
 
@@ -127,7 +135,7 @@ namespace CFXS {
                         delete task;
                         break;
                     }
-                    default: CFXS_ERROR("[Task] Unknown type %lu (group %lu)", (uint32_t)task->m_Type, group);
+                    default: CFXS_ERROR("[Task] Unknown type %u (group %u)", task->m_Type, group);
                 }
             }
         }
@@ -143,13 +151,13 @@ namespace CFXS {
         }
     }
 
-    Task* Task::Create(Group_t group, const char* name, const TaskFunction& func, Time_t period) {
+    Task* Task::Create(Group_t group, const char* name, const TaskFunction& func, uint32_t period) {
         if (!GroupExists(group)) {
-            CFXS_ERROR("[Task::Create] Group %lu does not exist", group);
+            CFXS_ERROR("[Task::Create] Group %u does not exist", group);
             return nullptr;
         }
         if (GroupFull(group)) {
-            CFXS_ERROR("[Task::Create] Group %lu is full", group);
+            CFXS_ERROR("[Task::Create] Group %u is full", group);
             return nullptr;
         }
 
@@ -162,7 +170,7 @@ namespace CFXS {
 
         if (task) {
             task->m_ProcessTime = 0;
-            CFXS_printf("[Task@%p] Create Periodic Task %p \"%s\" in group %lu with period %llums\n",
+            CFXS_printf("[Task@%p] Create Periodic Task %p \"%s\" in group %u with period %lums\n",
                         task,
                         func.GetFunctionPointer(),
                         name,
@@ -175,13 +183,13 @@ namespace CFXS {
         return task;
     }
 
-    bool Task::Queue(Group_t group, const TaskFunction& func, Time_t delay) {
+    bool Task::Queue(Group_t group, const TaskFunction& func, uint32_t delay) {
         if (!GroupExists(group)) {
-            CFXS_ERROR("[Task::Queue] Group %lu does not exist", group);
+            CFXS_ERROR("[Task::Queue] Group %u does not exist", group);
             return false;
         }
         if (GroupFull(group)) {
-            CFXS_ERROR("[Task::Queue] Group %lu is full", group);
+            CFXS_ERROR("[Task::Queue] Group %u is full", group);
             return false;
         }
 
@@ -199,7 +207,7 @@ namespace CFXS {
 
     Task* Task::GetCurrentTask(Group_t group) {
         if (!GroupExists(group)) {
-            CFXS_ERROR("[Task] Group %lu does not exist", group);
+            CFXS_ERROR("[Task] Group %u does not exist", group);
             return nullptr;
         }
 
@@ -209,39 +217,23 @@ namespace CFXS {
     ////////////////////////////////////////////////////////////////////////////////////////////////////
     // Member
 
-    Task::Task(Group_t group, const char* name, const TaskFunction& func, Type type, Time_t period) :
+    Task::Task(Group_t group, const char* name, const TaskFunction& func, Type type, uint32_t period) :
 #if CFXS_TASK_NAME_FIELD == 1
         m_Name(name),
 #endif
         m_Group(group),
+        m_Type(type),
         m_Function(func),
         m_ProcessTime(Time::ms + period),
-        m_Period(period),
-        m_Type(type) {
-    }
-
-    const TaskFunction& Task::GetFunction() const {
-        return m_Function;
-    }
-
-    Group_t Task::GetGroup() const {
-        return m_Group;
+        m_Period(period) {
     }
 
     void Task::Task::SetGroup(Group_t group) {
         if (GroupExists(group)) {
             m_Group = group;
         } else {
-            CFXS_ERROR("[Task] Group %lu does not exist", group);
+            CFXS_ERROR("[Task] Group %u does not exist", group);
         }
-    }
-
-    Group_t Task::GetPeriod() const {
-        return m_Period;
-    }
-
-    void Task::SetPeriod(Time_t period) {
-        m_Period = period;
     }
 
 } // namespace CFXS

@@ -6,14 +6,26 @@ file(GLOB_RECURSE sources CONFIGURE_DEPENDS
   "${CMAKE_CURRENT_SOURCE_DIR}/src/*.cpp"
 )
 
+file(GLOB_RECURSE asm_sources CONFIGURE_DEPENDS
+  "${CMAKE_CURRENT_SOURCE_DIR}/src/*.S"
+)
+
 file(GLOB_RECURSE headers CONFIGURE_DEPENDS
   "${CMAKE_CURRENT_SOURCE_DIR}/include/*.h"
   "${CMAKE_CURRENT_SOURCE_DIR}/include/*.hpp"
 )
 
-if("${CFXS_STARTUP_PLATFORM}" STREQUAL "TM4C129X")
-  target_sources(${CMAKE_PROJECT_NAME} PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}/private/Startup/TM4C129X.cpp")
+if("${CFXS_STARTUP_PLATFORM}" STREQUAL "TM4C129")
   target_sources(${CMAKE_PROJECT_NAME} PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}/private/Platform/TM4C/TM4C_CoreInit.cpp")
+
+  file(GLOB_RECURSE tm4c129_sources CONFIGURE_DEPENDS
+    "${CMAKE_CURRENT_SOURCE_DIR}/private/Startup/TM4C129/*.cpp"
+  )
+  list(APPEND sources ${tm4c129_sources})
+  file(GLOB_RECURSE tm4c129_asm_sources CONFIGURE_DEPENDS
+    "${CMAKE_CURRENT_SOURCE_DIR}/private/Startup/TM4C129/*.S"
+  )
+  list(APPEND asm_sources ${tm4c129_asm_sources})
 elseif("${CFXS_STARTUP_PLATFORM}" STREQUAL "STM32H7x3")
   target_sources(${CMAKE_PROJECT_NAME} PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}/private/Startup/STM32H7x3.cpp")
   target_sources(${CMAKE_PROJECT_NAME} PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}/private/Platform/STM32/STM32H7x3_CoreInit.cpp")
@@ -26,23 +38,24 @@ elseif("${CFXS_STARTUP_PLATFORM}" STREQUAL "STM32H7x3")
   list(APPEND sources ${hal_sources})
   list(APPEND headers ${hal_headers})
 elseif("${CFXS_STARTUP_PLATFORM}" STREQUAL "STM32G4x3")
-    target_sources(${CMAKE_PROJECT_NAME} PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}/private/Startup/STM32G4x3.cpp")
-    target_sources(${CMAKE_PROJECT_NAME} PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}/private/Platform/STM32/STM32G4x3_CoreInit.cpp")
-    file(GLOB_RECURSE hal_sources CONFIGURE_DEPENDS
-      "${CMAKE_CURRENT_SOURCE_DIR}/private/Platform/STM32/STM32G4xx_HAL/*.c"
-    )
-    file(GLOB_RECURSE hal_headers CONFIGURE_DEPENDS
-      "${CMAKE_CURRENT_SOURCE_DIR}/private/Platform/STM32/STM32G4xx_HAL/*.h"
-    )
-    list(APPEND sources ${hal_sources})
-    list(APPEND headers ${hal_headers})
+  target_sources(${CMAKE_PROJECT_NAME} PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}/private/Startup/STM32G4x3.cpp")
+  target_sources(${CMAKE_PROJECT_NAME} PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}/private/Platform/STM32/STM32G4x3_CoreInit.cpp")
+  file(GLOB_RECURSE hal_sources CONFIGURE_DEPENDS
+    "${CMAKE_CURRENT_SOURCE_DIR}/private/Platform/STM32/STM32G4xx_HAL/*.c"
+  )
+  file(GLOB_RECURSE hal_headers CONFIGURE_DEPENDS
+    "${CMAKE_CURRENT_SOURCE_DIR}/private/Platform/STM32/STM32G4xx_HAL/*.h"
+  )
+  list(APPEND sources ${hal_sources})
+  list(APPEND headers ${hal_headers})
 else()
   message(FATAL_ERROR "CFXS-Platform unsupported CFXS_STARTUP_PLATFORM: [${CFXS_STARTUP_PLATFORM}]")
 endif()
 
 set_source_files_properties(${sources} PROPERTIES LANGUAGE CXX)
+set_source_files_properties(${asm_sources} PROPERTIES LANGUAGE ASM)
 
-add_library(CFXS_Platform ${sources} ${headers})
+add_library(CFXS_Platform ${asm_sources} ${sources} ${headers})
 target_include_directories(CFXS_Platform PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/include)
 target_include_directories(CFXS_Platform PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/src)
 

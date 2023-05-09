@@ -83,15 +83,15 @@ namespace CFXS::CPU {
     /// Count trailing zeros
     inline uint32_t __CTZ(uint32_t x) {
         uint32_t res = 0;
-        asm("rbit %[dest], %[val]" : [ dest ] "=r"(res) : [ val ] "r"(x));
-        asm("clz %[dest], %[val]" : [ dest ] "=r"(res) : [ val ] "r"(res));
+        asm("rbit %[dest], %[val]" : [dest] "=r"(res) : [val] "r"(x));
+        asm("clz %[dest], %[val]" : [dest] "=r"(res) : [val] "r"(res));
         return res;
     }
 
     /// Count leading zeros
     inline uint32_t __CLZ(uint32_t x) {
         uint32_t res = 0;
-        asm("clz %[dest], %[val]" : [ dest ] "=r"(res) : [ val ] "r"(res));
+        asm("clz %[dest], %[val]" : [dest] "=r"(res) : [val] "r"(res));
         return res;
     }
 
@@ -99,27 +99,27 @@ namespace CFXS::CPU {
     void __naked BlockingCycles(uint32_t cycles);
 
     /// Block for x miroseconds
-    void __always_inline BlockingMicroseconds(uint32_t usec) {
+    void inline BlockingMicroseconds(uint32_t usec) {
         BlockingCycles(usec * GetCyclesPerMicrosecond() / 3);
     }
 
     /// Block for x milliseconds
-    void __always_inline BlockingMilliseconds(uint32_t ms) {
+    void inline BlockingMilliseconds(uint32_t ms) {
         BlockingCycles(ms * GetCyclesPerMillisecond() / 3);
     }
 
     /// Enable cycle counter (DWT_CTRL)
-    void __always_inline EnableCycleCounter() {
+    void inline EnableCycleCounter() {
         Registers::DWT::DWT_CTRL.CYCCNTENA = true;
     }
 
     /// Disable cycle counter (DWT_CTRL)
-    void __always_inline DisableCycleCounter() {
+    void inline DisableCycleCounter() {
         Registers::DWT::DWT_CTRL.CYCCNTENA = false;
     }
 
     /// Get cycle count (DWT_CYCCNT)
-    size_t __always_inline GetCycleCount() {
+    size_t inline GetCycleCount() {
         return Registers::DWT::DWT_CYCCNT.CYCCNT;
     }
 

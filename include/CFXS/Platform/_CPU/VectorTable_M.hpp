@@ -134,7 +134,6 @@ namespace CFXS::CPU {
         VoidFunction_t __interrupt_125  = DEFAULT_HANDLER;
         VoidFunction_t __interrupt_126  = DEFAULT_HANDLER;
         VoidFunction_t __interrupt_127  = DEFAULT_HANDLER;
-        VoidFunction_t __interrupt_128  = DEFAULT_HANDLER;
 #ifdef CFXS_LONG_VECTOR_TABLE
         VoidFunction_t __interrupt_129 = DEFAULT_HANDLER;
         VoidFunction_t __interrupt_130 = DEFAULT_HANDLER;
@@ -263,7 +262,6 @@ namespace CFXS::CPU {
         VoidFunction_t __interrupt_253 = DEFAULT_HANDLER;
         VoidFunction_t __interrupt_254 = DEFAULT_HANDLER;
         VoidFunction_t __interrupt_255 = DEFAULT_HANDLER;
-        VoidFunction_t __interrupt_256 = DEFAULT_HANDLER;
 #endif
     };
 
