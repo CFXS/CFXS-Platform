@@ -38,9 +38,17 @@ namespace CFXS {
         /// \param size bytes to allocate
         void* Allocate(size_t size);
 
+        /// Allocate block of memory and set to 0
+        /// \param size bytes to allocate
+        __always_inline void* AllocateAndZero(size_t size) {
+            auto p = Allocate(size);
+            memset(p, 0, size);
+            return p;
+        }
+
         /// Allocate block of memory with type
         template<typename T>
-        T* Allocate(size_t n = 1) {
+        __always_inline T* Allocate(size_t n = 1) {
             return reinterpret_cast<T*>(Allocate(sizeof(T) * n));
         }
 
@@ -49,13 +57,13 @@ namespace CFXS {
 
         /// Allocate memory and call constructor
         template<typename T, typename... Args>
-        T* New(Args&&... args) {
+        __always_inline T* New(Args&&... args) {
             return new (Allocate<T>()) T(std::forward<Args>(args)...);
         }
 
         /// Call destructor and free memory
         template<typename T>
-        void Delete(T* obj) {
+        __always_inline void Delete(T* obj) {
             obj->~T();
             Deallocate(obj);
         }

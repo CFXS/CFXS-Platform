@@ -32,17 +32,15 @@ extern "C" void dlfree(void* mem);
 extern const uint32_t __HEAP_START__;
 extern const uint32_t __HEAP_END__;
 
-static __noinit CFXS::Heap s_MainHeap;
+__noinit CFXS::Heap s_MainHeap;
 static bool s_MemoryManagerInitialized = false;
 //////////////////////////////////////////////////////////////////////////////////
 void* operator new(size_t size) {
-    void* p = s_MainHeap.Allocate(size);
-    return p;
+    return s_MainHeap.Allocate(size);
 }
 
 void* operator new[](size_t size) {
-    void* p = s_MainHeap.Allocate(size);
-    return p;
+    return s_MainHeap.Allocate(size);
 }
 
 void operator delete(void* p) {
