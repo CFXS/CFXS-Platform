@@ -14,7 +14,7 @@ namespace CFXS::Network {
 
     void UDP_Socket::Process_Receive(void *arg, udp_pcb *pcb, pbuf *p, const ip4_addr *addr, uint16_t port) {
         char addr_str[32];
-        CFXS::IPv4{CFXS::NTOHL(addr->addr)}.PrintTo(addr_str, 32);
+        CFXS::IPv4{addr->addr}.PrintTo(addr_str, 32);
         CFXS_printf("UDP received %d bytes from %s:%u\n", p->tot_len, addr_str, port);
         pbuf_free(p);
     }

@@ -22,6 +22,8 @@
 #include <CFXS/Base/Time.hpp>
 #include <array>
 
+#include <Task_Debug.hpp>
+
 namespace CFXS {
 
     using Group_t = Task::Group_t;
@@ -88,7 +90,7 @@ namespace CFXS {
                 memset(taskGroup.tasks, 0, sizeof(Task*) * capacity);
                 taskGroup.capacity = capacity;
                 taskGroup.exists   = true;
-                CFXS_printf("[Task] Added task group %u with capacity %u\t[task array @ %p]\n", group, capacity, taskGroup.tasks);
+                CFXS_Task_printf(DebugLevel::TRACE, "Add task group [%u] with capacity %u\n", group, capacity);
                 return true;
             } else {
                 CFXS_ERROR("Failed to create task group %u with capacity %u", group, capacity);
@@ -99,7 +101,7 @@ namespace CFXS {
 
     void Task::ProcessGroup(Group_t group) {
         if (!s_GlobalEnable) {
-            CFXS_ERROR("[Task] Task processing not enabled");
+            CFXS_Task_printf(DebugLevel::WARNING, "Task processing not enabled");
             return;
         }
 
@@ -170,12 +172,7 @@ namespace CFXS {
 
         if (task) {
             task->m_ProcessTime = 0;
-            CFXS_printf("[Task@%p] Create Periodic Task %p \"%s\" in group %u with period %lums\n",
-                        task,
-                        func.GetFunctionPointer(),
-                        name,
-                        group,
-                        period);
+            CFXS_Task_printf(DebugLevel::TRACE, "Create task \"%s\" @ %lums in group [%u]\n", name, period, group);
         } else {
             CFXS_ERROR("[Task] Failed to create task");
         }
