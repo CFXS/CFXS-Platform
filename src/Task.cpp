@@ -93,7 +93,7 @@ namespace CFXS {
                 CFXS_Task_printf(DebugLevel::TRACE, "Add task group [%u] with capacity %u\n", group, capacity);
                 return true;
             } else {
-                CFXS_ERROR("Failed to create task group %u with capacity %u", group, capacity);
+                CFXS_ERROR("Failed to create task group %u with capacity %u\n", group, capacity);
                 return false;
             }
         }
@@ -101,12 +101,12 @@ namespace CFXS {
 
     void Task::ProcessGroup(Group_t group) {
         if (!s_GlobalEnable) {
-            CFXS_Task_printf(DebugLevel::WARNING, "Task processing not enabled");
+            CFXS_Task_printf(DebugLevel::WARNING, "Task processing not enabled (group %d)\n", group);
             return;
         }
 
         if (!GroupExists(group)) {
-            CFXS_ERROR("[Task] Group %u does not exist", group);
+            CFXS_ERROR("[Task] Group %u does not exist\n", group);
             return;
         }
 
@@ -137,7 +137,7 @@ namespace CFXS {
                         delete task;
                         break;
                     }
-                    default: CFXS_ERROR("[Task] Unknown type %u (group %u)", task->m_Type, group);
+                    default: CFXS_ERROR("[Task] Unknown type %u (group %u)\n", task->m_Type, group);
                 }
             }
         }
@@ -155,11 +155,11 @@ namespace CFXS {
 
     Task* Task::Create(Group_t group, const char* name, const TaskFunction& func, uint32_t period) {
         if (!GroupExists(group)) {
-            CFXS_ERROR("[Task::Create] Group %u does not exist", group);
+            CFXS_ERROR("[Task::Create] Group %u does not exist\n", group);
             return nullptr;
         }
         if (GroupFull(group)) {
-            CFXS_ERROR("[Task::Create] Group %u is full", group);
+            CFXS_ERROR("[Task::Create] Group %u is full\n", group);
             return nullptr;
         }
 
@@ -180,20 +180,20 @@ namespace CFXS {
         return task;
     }
 
-    bool Task::Queue(Group_t group, const TaskFunction& func, uint32_t delay) {
+    bool Task::Queue(Group_t group, const char* name, const TaskFunction& func, uint32_t delay) {
         if (!GroupExists(group)) {
-            CFXS_ERROR("[Task::Queue] Group %u does not exist", group);
+            CFXS_ERROR("[Task::Queue] Group %u does not exist\n", group);
             return false;
         }
         if (GroupFull(group)) {
-            CFXS_ERROR("[Task::Queue] Group %u is full", group);
+            CFXS_ERROR("[Task::Queue] Group %u is full\n", group);
             return false;
         }
 
         Task* task;
         {
             CFXS::CPU::NoInterruptScope _;
-            task = new Task(group, "Queued Task", func, Type::SINGLE_SHOT, delay);
+            task = new Task(group, name, func, Type::SINGLE_SHOT, delay);
             InsertTask(group, task);
         }
 
@@ -204,7 +204,7 @@ namespace CFXS {
 
     Task* Task::GetCurrentTask(Group_t group) {
         if (!GroupExists(group)) {
-            CFXS_ERROR("[Task] Group %u does not exist", group);
+            CFXS_ERROR("[Task] Group %u does not exist\n", group);
             return nullptr;
         }
 
@@ -229,7 +229,7 @@ namespace CFXS {
         if (GroupExists(group)) {
             m_Group = group;
         } else {
-            CFXS_ERROR("[Task] Group %u does not exist", group);
+            CFXS_ERROR("[Task] Group %u does not exist\n", group);
         }
     }
 

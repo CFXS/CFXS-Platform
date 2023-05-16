@@ -18,6 +18,7 @@
 // [CFXS] //
 #include <CFXS/Platform/Heap/_Heap.hpp>
 #include <CFXS/Base/Debug.hpp>
+#include <CFXS/Platform/CPU.hpp>
 
 //////////////////////////////////////////////////////////////////////////////////
 // dlmalloc extern
@@ -48,6 +49,10 @@ namespace CFXS {
     /// Allocate block of memory
     /// \param size bytes to allocate
     void* Heap::Allocate(size_t size) {
+#ifndef CFXS_HEAP_NO_INTERRUPT_DISABLE
+        CFXS::CPU::NoInterruptScope _;
+#endif
+
 #ifdef CFXS_HEAP_CHECK_LOCK
         CFXS_ASSERT(!m_Locked, "Heap(%s): locked :(", GetLabel());
         m_Locked = true;
@@ -63,7 +68,8 @@ namespace CFXS {
 #ifdef CFXS_HEAP_CHECK_LOCK
             m_Locked = false;
 #endif
-            return (uint32_t*)ptr + 1;
+
+            return ((uint32_t*)ptr) + 1;
         }
 
         CFXS_ERROR("Heap(%s): failed to allocate %u bytes\n", GetLabel(), size);
@@ -76,6 +82,10 @@ namespace CFXS {
 
     /// Deallocate pointer
     void Heap::Deallocate(void* ptr) {
+#ifndef CFXS_HEAP_NO_INTERRUPT_DISABLE
+        CFXS::CPU::NoInterruptScope _;
+#endif
+
 #ifdef CFXS_HEAP_CHECK_LOCK
         CFXS_ASSERT(!m_Locked, "Heap(%s): locked :(", GetLabel());
         m_Locked = true;

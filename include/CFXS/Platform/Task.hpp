@@ -72,10 +72,11 @@ namespace CFXS {
         /////////////////////////////////////////////////////////////////////////////
         /// Queue single shot task
         /// \param group task group
+        /// \param name task label
         /// \param func function to queue
         /// \param delay trigger delay from current timestamp
         /// \return bool - true if queued successfully
-        static bool Queue(Group_t group, const TaskFunction& func, uint32_t delay = 0);
+        static bool Queue(Group_t group, const char* name, const TaskFunction& func, uint32_t delay = 0);
 
         /////////////////////////////////////////////////////////////////////////////
         /// Get task currently being processed

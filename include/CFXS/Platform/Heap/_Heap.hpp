@@ -42,7 +42,8 @@ namespace CFXS {
         /// \param size bytes to allocate
         __always_inline void* AllocateAndZero(size_t size) {
             auto p = Allocate(size);
-            memset(p, 0, size);
+            if (p)
+                memset(p, 0, size);
             return p;
         }
 

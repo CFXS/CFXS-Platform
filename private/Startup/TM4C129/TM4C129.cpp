@@ -65,6 +65,11 @@ namespace CFXS {
     }
 } // namespace CFXS
 
+bool s_InitializationComplete = false;
+bool __cfxs_is_initialization_complete() {
+    return s_InitializationComplete;
+}
+
 __weak __used void __cfxs_entry_point() {
     extern void CFXS_LowPriorityLoop();
     static const size_t stackSize       = (size_t)&__STACK_START__ - (size_t)&__STACK_END__;
@@ -105,6 +110,7 @@ __weak __used void __cfxs_entry_point() {
     CFXS::SafeCall(e_AppDescriptor.moduleInit);
     CFXS::SafeCall(e_AppDescriptor.postModuleInit);
 
+    s_InitializationComplete = true;
     CFXS::CPU::EnableInterrupts();
 
     while (1 < 2) {

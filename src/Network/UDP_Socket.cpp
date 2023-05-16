@@ -1,5 +1,9 @@
 #include <CFXS/Platform/Network/UDP_Socket.hpp>
+#include <CFXS/Platform/CPU.hpp>
 #include <lwip/udp.h>
+#include <lwip/netif.h>
+
+extern netif e_Main_Network_Interface;
 
 namespace CFXS::Network {
 
@@ -16,8 +20,20 @@ namespace CFXS::Network {
         udp_remove(m_Socket);
     }
 
-    bool UDP_Socket::SendPacket(const NetworkPacket &packet) {
-        auto packet_buffer = pbuf_alloc_reference((void *)packet.GetData(), packet.GetSize(), PBUF_REF);
+    bool UDP_Socket::SendPacket(const NetworkPacket &packet, bool send_reference) {
+        // pbuf_alloc_reference is not faster than pbuf_alloc with copy???
+
+        if (!e_Main_Network_Interface._.link) { // link down
+            return false;
+        }
+
+        pbuf *packet_buffer;
+
+        if (send_reference) {
+            packet_buffer = pbuf_alloc_reference((void *)packet.GetData(), packet.GetSize(), PBUF_REF);
+        } else {
+            packet_buffer = pbuf_alloc_and_take(PBUF_TRANSPORT, packet.GetDataCast<void>(), packet.GetSize(), PBUF_RAM);
+        }
 
         if (!packet_buffer) {
             return false;
@@ -28,13 +44,18 @@ namespace CFXS::Network {
 
         if (res != ERR_OK) {
             pbuf_free(packet_buffer);
-            // CFXS_printf("UDP send error [%s] dest %u.%u.%u.%u:%u\n",
-            //             __lwip_err_t_ToString(res),
-            //             packet.GetDestinationAddress()[0],
-            //             packet.GetDestinationAddress()[1],
-            //             packet.GetDestinationAddress()[2],
-            //             packet.GetDestinationAddress()[3],
-            //             packet.GetDestinationPort());
+            CFXS_printf("UDP TX error [%s]", __lwip_err_t_ToString(res));
+
+            if (res == ERR_RTE) {
+                CFXS_printf(" -> %u.%u.%u.%u:%u\n",
+                            packet.GetDestinationAddress()[0],
+                            packet.GetDestinationAddress()[1],
+                            packet.GetDestinationAddress()[2],
+                            packet.GetDestinationAddress()[3],
+                            packet.GetDestinationPort());
+            } else {
+                CFXS_printf("\n");
+            }
             return false;
         }
 
