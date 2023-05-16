@@ -3,13 +3,43 @@
 
 namespace CFXS::Network {
 
-    UDP_Socket::UDP_Socket(const CFXS::IPv4 &ip, uint16_t port) {
+    UDP_Socket::UDP_Socket(const IPv4 &ip, uint16_t port) {
         m_Socket = udp_new();
         udp_recv(m_Socket, Process_Receive, this);
-        ip4_addr addr;
-        addr.addr = ip.ToNetworkOrder();
-        udp_bind(m_Socket, &addr, port);
+        udp_bind(m_Socket, ip.GetPointerCast<ip4_addr>(), port);
         ip_set_option(m_Socket, SOF_REUSEADDR | SOF_BROADCAST);
+        m_Socket->netif_idx     = 0;
+        m_Socket->mcast_ifindex = 0;
+    }
+
+    UDP_Socket::~UDP_Socket() {
+        udp_remove(m_Socket);
+    }
+
+    bool UDP_Socket::SendPacket(const NetworkPacket &packet) {
+        auto packet_buffer = pbuf_alloc_reference((void *)packet.GetData(), packet.GetSize(), PBUF_REF);
+
+        if (!packet_buffer) {
+            return false;
+        }
+
+        auto res =
+            udp_sendto(m_Socket, packet_buffer, packet.GetDestinationAddress().GetPointerCast<ip4_addr>(), packet.GetDestinationPort());
+
+        if (res != ERR_OK) {
+            pbuf_free(packet_buffer);
+            // CFXS_printf("UDP send error [%s] dest %u.%u.%u.%u:%u\n",
+            //             __lwip_err_t_ToString(res),
+            //             packet.GetDestinationAddress()[0],
+            //             packet.GetDestinationAddress()[1],
+            //             packet.GetDestinationAddress()[2],
+            //             packet.GetDestinationAddress()[3],
+            //             packet.GetDestinationPort());
+            return false;
+        }
+
+        pbuf_free(packet_buffer);
+        return true;
     }
 
     void UDP_Socket::Process_Receive(void *arg, udp_pcb *pcb, pbuf *p, const ip4_addr *addr, uint16_t port) {

@@ -28,7 +28,10 @@ namespace CFXS {
         enum Type : uint8_t { SINGLE_SHOT, PERIODIC };
 
     public:
-        static constexpr auto MAX_GROUP_INDEX = 8;
+#ifndef CFXS_TASK_MAX_GROUP_INDEX
+    #define CFXS_TASK_MAX_GROUP_INDEX 4
+#endif
+        static constexpr auto MAX_GROUP_INDEX = CFXS_TASK_MAX_GROUP_INDEX;
         using Group_t                         = uint8_t;
 
         /////////////////////////////////////////////////////////////////////////////
