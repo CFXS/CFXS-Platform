@@ -2,8 +2,10 @@
 #include <CFXS/Platform/CPU.hpp>
 #include <lwip/udp.h>
 #include <lwip/netif.h>
+#include <lwip/ip.h>
 
 extern netif e_Main_Network_Interface;
+extern ip_globals ip_data;
 
 namespace CFXS::Network {
 
@@ -12,8 +14,6 @@ namespace CFXS::Network {
         udp_recv(m_Socket, Process_Receive, this);
         udp_bind(m_Socket, ip.GetPointerCast<ip4_addr>(), port);
         ip_set_option(m_Socket, SOF_REUSEADDR | SOF_BROADCAST);
-        m_Socket->netif_idx     = 0;
-        m_Socket->mcast_ifindex = 0;
     }
 
     UDP_Socket::~UDP_Socket() {
@@ -63,10 +63,29 @@ namespace CFXS::Network {
         return true;
     }
 
+    uint16_t UDP_Socket::GetPort() const {
+        return m_Socket->local_port;
+    }
+
+    void UDP_Socket::RegisterReceiveCallback(const ReceiveCallback &cb) {
+        CFXS::CPU::NoInterruptScope _;
+        m_ReceiveCallbacks.push_back(cb);
+    }
+
+    void UDP_Socket::UnregisterReceiveCallback(const ReceiveCallback &unreg_cb) {
+        CFXS::CPU::NoInterruptScope _;
+        eastl::erase_if(m_ReceiveCallbacks, [&](const ReceiveCallback &cb) {
+            return cb.GetFunctionPointer() == unreg_cb.GetFunctionPointer();
+        });
+    }
+
     void UDP_Socket::Process_Receive(void *arg, udp_pcb *pcb, pbuf *p, const ip4_addr *addr, uint16_t port) {
-        char addr_str[32];
-        CFXS::IPv4{addr->addr}.PrintTo(addr_str, 32);
-        CFXS_printf("UDP received %d bytes from %s:%u\n", p->tot_len, addr_str, port);
+        UDP_Socket *socket = reinterpret_cast<UDP_Socket *>(arg);
+        NetworkPacketRef<IPv4> packet(p, IPv4{addr->addr}, port, IPv4{ip_data.current_iphdr_src.addr}, socket->GetPort());
+
+        for (auto &cb : socket->m_ReceiveCallbacks)
+            cb(packet);
+
         pbuf_free(p);
     }
 
