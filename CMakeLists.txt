@@ -1,6 +1,7 @@
+set(LIBRARY_NAME CFXS_Platform)
+
 # set(CMAKE_UNITY_BUILD true)
 # set(CMAKE_UNITY_BUILD_BATCH_SIZE 16)
-
 file(GLOB_RECURSE sources CONFIGURE_DEPENDS
   "${CMAKE_CURRENT_SOURCE_DIR}/src/*.c"
   "${CMAKE_CURRENT_SOURCE_DIR}/src/*.cpp"
@@ -55,40 +56,53 @@ endif()
 set_source_files_properties(${sources} PROPERTIES LANGUAGE CXX)
 set_source_files_properties(${asm_sources} PROPERTIES LANGUAGE ASM)
 
-add_library(CFXS_Platform ${asm_sources} ${sources} ${headers})
-target_include_directories(CFXS_Platform PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/include)
-target_include_directories(CFXS_Platform PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/src)
+add_library(${LIBRARY_NAME} ${asm_sources} ${sources} ${headers})
+target_include_directories(${LIBRARY_NAME} PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/include)
+target_include_directories(${LIBRARY_NAME} PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/src)
 
 if(${CFXS_ARCH} STREQUAL "ARM")
-  target_include_directories(CFXS_Platform PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/private/ARM/CMSIS/Core/Include)
+  target_include_directories(${LIBRARY_NAME} PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/private/ARM/CMSIS/Core/Include)
 endif()
 
 if(${CFXS_STARTUP_PLATFORM} STREQUAL "STM32H7x3")
-  target_include_directories(CFXS_Platform PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/private/Platform/STM32/STM32H7xx_HAL/include)
-  target_include_directories(CFXS_Platform PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/private/Platform/STM32/STM32H7xx/Include)
+  target_include_directories(${LIBRARY_NAME} PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/private/Platform/STM32/STM32H7xx_HAL/include)
+  target_include_directories(${LIBRARY_NAME} PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/private/Platform/STM32/STM32H7xx/Include)
 elseif(${CFXS_STARTUP_PLATFORM} STREQUAL "STM32G4x3")
-  target_include_directories(CFXS_Platform PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/private/Platform/STM32/STM32G4xx_HAL/include)
-  target_include_directories(CFXS_Platform PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/private/Platform/STM32/STM32G4xx/Include)
+  target_include_directories(${LIBRARY_NAME} PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/private/Platform/STM32/STM32G4xx_HAL/include)
+  target_include_directories(${LIBRARY_NAME} PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/private/Platform/STM32/STM32G4xx/Include)
 endif()
 
-target_compile_definitions(CFXS_Platform PUBLIC
+if(${CFXS_PLATFORM} STREQUAL "TM4C")
+  target_link_libraries(${LIBRARY_NAME} PRIVATE tm4c_driverlib)
+else()
+  message(FATAL_ERROR "CFXS_Platform unsupported platform")
+endif()
+
+target_compile_definitions(${LIBRARY_NAME} PUBLIC
   "EASTL_OPENSOURCE=1"
   "EASTL_EXCEPTIONS_ENABLED=0"
   "EASTL_RTTI_ENABLED=0"
 )
 
 target_compile_options(
-  CFXS_Platform
+  ${LIBRARY_NAME}
   PRIVATE
   -Wno-strict-aliasing
 )
 
 target_precompile_headers(
-  CFXS_Platform
-  PUBLIC
+  ${LIBRARY_NAME}
+  PRIVATE
   <stddef.h>
   <stdint.h>
   <stdbool.h>
   <string.h>
   <new>
 )
+
+target_link_libraries(${LIBRARY_NAME} PRIVATE CFXS_Toolchain)
+target_link_libraries(${LIBRARY_NAME} PRIVATE CFXS_Base)
+
+if(${CFXS_PLATFORM_NETWORK})
+  target_link_libraries(${LIBRARY_NAME} PRIVATE lwip)
+endif()

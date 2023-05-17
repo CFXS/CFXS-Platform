@@ -7,5 +7,5 @@ namespace CFXS {
 
 #define CFXS_Task_printf(level, ...)                 \
     if constexpr (level >= CFXS::TASK_DEBUG_LEVEL) { \
-        CFXS_printf("CFXS::Task> " __VA_ARGS__);     \
+        CFXS_printf("Task> " __VA_ARGS__);           \
     }
