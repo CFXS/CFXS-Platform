@@ -20,7 +20,6 @@
 #include <CFXS/Platform/CPU.hpp>
 #include <CFXS/Base/Debug.hpp>
 #include <CFXS/Base/Time.hpp>
-#include <array>
 
 #include <Task_Debug.hpp>
 
@@ -37,7 +36,7 @@ namespace CFXS {
         size_t capacity;
         bool exists = false;
     };
-    static std::array<TaskGroupEntry, Task::MAX_GROUP_INDEX> s_TaskGroups;
+    static eastl::array<TaskGroupEntry, Task::MAX_GROUP_INDEX> s_TaskGroups;
     ////////////////////////////////////////////////////////////////////////////////////////////////////
 
     static bool GroupExists(Group_t group) {

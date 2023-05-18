@@ -16,7 +16,6 @@
 // along with this program.  If not, see <http://www.gnu.org/licenses/>
 // ---------------------------------------------------------------------
 // [CFXS] //
-#include <array>
 #include <CFXS/Base/Debug.hpp>
 #include <CFXS/Platform/Heap/MemoryManager.hpp>
 
@@ -80,7 +79,7 @@ extern "C" void free(void* mem) {
 namespace CFXS {
 
     //////////////////////////////////////////////////////////////////////////////////
-    static __noinit std::array<Heap, CFXS_PLATFORM_MAX_HEAP_COUNT> s_Heaps;
+    static __noinit eastl::array<Heap, CFXS_PLATFORM_MAX_HEAP_COUNT> s_Heaps;
     static size_t s_HeapCount = 0;
     //////////////////////////////////////////////////////////////////////////////////
 
@@ -97,6 +96,10 @@ namespace CFXS {
         new (&s_MainHeap) CFXS::Heap("Main Heap", heapBase, heapSize);
 
         s_MemoryManagerInitialized = true;
+    }
+
+    Heap* MemoryManager::GetMainHeap() {
+        return &s_MainHeap;
     }
 
     /// Create new heap

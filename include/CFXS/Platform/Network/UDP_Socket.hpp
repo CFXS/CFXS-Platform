@@ -3,7 +3,6 @@
 #include <CFXS/Base/IPv4.hpp>
 #include <CFXS/Base/NetworkPacket.hpp>
 #include <CFXS/Base/NetworkPacketRef.hpp>
-#include <EASTL/vector.h>
 
 struct udp_pcb;
 struct pbuf;

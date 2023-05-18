@@ -19,11 +19,16 @@
 #include <type_traits>
 #include <driverlib/sysctl.h>
 #include <driverlib/systick.h>
+#include <driverlib/rom.h>
+#include <driverlib/timer.h>
+#include <inc/hw_ints.h>
+#include <inc/hw_sysctl.h>
+#include <inc/hw_memmap.h>
+#include <inc/hw_timer.h>
 #include <CFXS/Base/Time.hpp>
 #include <CFXS/Base/Debug.hpp>
 #include <CFXS/Base/Utility.hpp>
 #include <CFXS/Platform/CPU.hpp>
-#include <CFXS/Platform/App.hpp>
 #include <CFXS/Platform/Heap/MemoryManager.hpp>
 
 // Empty handler for Tiva lib ASSERT
@@ -54,14 +59,9 @@ extern void (*const __FINI_ARRAY_END__[])(void);
 /////////////////////////////////////////////////////////////
 // Default startup
 
-extern const CFXS::AppDescriptor e_AppDescriptor;
 namespace CFXS {
     namespace Time {
         volatile Time_t ms = 0;
-    }
-
-    namespace Platform {
-        extern void CoreInit(const CFXS::AppDescriptor& appDesc);
     }
 } // namespace CFXS
 
@@ -70,15 +70,69 @@ bool __cfxs_is_initialization_complete() {
     return s_InitializationComplete;
 }
 
+extern void CFXS_LowPriorityLoop();
+extern void CFXS_HighPriorityLoop();
+extern void CFXS_SystemPriorityLoop();
+
+__weak void __cfxs_app_InitializeModules() {
+}
+__weak void __cfxs_app_Initialize() {
+}
+
+static inline void InitializeTimers() {
+#if CFXS_APP_SYSTICK_PERIOD
+    SysTickIntRegister(CFXS_SystemPriorityLoop);
+    ROM_SysTickPeriodSet(CFXS_APP_SYSTICK_PERIOD);
+    ROM_SysTickIntEnable();
+    ROM_SysTickEnable();
+#else
+    #warning CFXS_APP_SYSTICK_PERIOD not defined
+#endif
+
+#if defined(CFXS_APP_HIGH_PRIORITY_TIMER_PERIOD) && defined(CFXS_APP_HIGH_PRIORITY_TIMER_INDEX) && \
+    defined(CFXS_APP_HIGH_PRIORITY_TIMER_PRIORITY)
+    static_assert(CFXS_APP_HIGH_PRIORITY_TIMER_INDEX <= 7, "Invalid timer index");
+    static constexpr uint32_t TIMER_PERIPH[] = {SYSCTL_PERIPH_TIMER0,
+                                                SYSCTL_PERIPH_TIMER1,
+                                                SYSCTL_PERIPH_TIMER2,
+                                                SYSCTL_PERIPH_TIMER3,
+                                                SYSCTL_PERIPH_TIMER4,
+                                                SYSCTL_PERIPH_TIMER5,
+                                                SYSCTL_PERIPH_TIMER6,
+                                                SYSCTL_PERIPH_TIMER7};
+    static constexpr uint32_t TIMER_INT[]    = {
+        INT_TIMER0A, INT_TIMER1A, INT_TIMER2A, INT_TIMER3A, INT_TIMER4A, INT_TIMER5A, INT_TIMER6A, INT_TIMER7A};
+    static constexpr uint32_t TIMER_BASE[] = {
+        TIMER0_BASE, TIMER1_BASE, TIMER2_BASE, TIMER3_BASE, TIMER4_BASE, TIMER5_BASE, TIMER6_BASE, TIMER7_BASE};
+    ROM_SysCtlPeripheralEnable(TIMER_PERIPH[CFXS_APP_HIGH_PRIORITY_TIMER_INDEX]);
+    while (!ROM_SysCtlPeripheralReady(TIMER_PERIPH[CFXS_APP_HIGH_PRIORITY_TIMER_INDEX])) {
+    }
+
+    ROM_TimerConfigure(TIMER_BASE[CFXS_APP_HIGH_PRIORITY_TIMER_INDEX], TIMER_CFG_PERIODIC);
+    ROM_IntEnable(TIMER_INT[CFXS_APP_HIGH_PRIORITY_TIMER_INDEX]);
+    ROM_IntPrioritySet(TIMER_INT[CFXS_APP_HIGH_PRIORITY_TIMER_INDEX], (CFXS_APP_HIGH_PRIORITY_TIMER_PRIORITY) << 5);
+    ROM_TimerIntEnable(TIMER_BASE[CFXS_APP_HIGH_PRIORITY_TIMER_INDEX], TIMER_TIMA_TIMEOUT);
+    TimerIntRegister(TIMER_BASE[CFXS_APP_HIGH_PRIORITY_TIMER_INDEX], TIMER_A, []() {
+        __mem32(TIMER_BASE[CFXS_APP_HIGH_PRIORITY_TIMER_INDEX] + TIMER_O_ICR) = 0xFFFFFFFF;
+        CFXS_HighPriorityLoop();
+    });
+    ROM_TimerLoadSet(TIMER_BASE[CFXS_APP_HIGH_PRIORITY_TIMER_INDEX], TIMER_A, CFXS_APP_HIGH_PRIORITY_TIMER_PERIOD);
+    ROM_TimerEnable(TIMER_BASE[CFXS_APP_HIGH_PRIORITY_TIMER_INDEX], TIMER_A);
+#else
+    #warning CFXS_APP_HIGH_PRIORITY_TIMER_PERIOD not defined
+    #warning CFXS_APP_HIGH_PRIORITY_TIMER_INDEX not defined
+    #warning CFXS_APP_HIGH_PRIORITY_TIMER_PRIORITY not defined
+#endif
+}
+
 __weak __used void __cfxs_entry_point() {
-    extern void CFXS_LowPriorityLoop();
     static const size_t stackSize       = (size_t)&__STACK_START__ - (size_t)&__STACK_END__;
     static const size_t heapSize        = (size_t)&__HEAP_END__ - (size_t)&__HEAP_START__;
     static const size_t romDataSize     = (size_t)&__TEXT_END__ - (size_t)&__TEXT_START__;
     static const size_t ramInitDataSize = (size_t)&__DATA_END__ - (size_t)&__DATA_START__;
     static const size_t ramZeroDataSize = (size_t)&__BSS_END__ - (size_t)&__BSS_START__;
 
-    CFXS::Platform::CoreInit(e_AppDescriptor);
+    InitializeTimers();
 
     CFXS_printf("[" CFXS_PROJECT_NAME " " CFXS_PROJECT_VERSION_STRING "]\n");
     CFXS_printf(" - ROM Data:      %ukB\t[0x%08X - 0x%08X] (%u bytes)\n",
@@ -107,8 +161,8 @@ __weak __used void __cfxs_entry_point() {
                 (size_t)&__HEAP_END__,
                 heapSize);
 
-    CFXS::SafeCall(e_AppDescriptor.moduleInit);
-    CFXS::SafeCall(e_AppDescriptor.postModuleInit);
+    __cfxs_app_InitializeModules();
+    __cfxs_app_Initialize();
 
     s_InitializationComplete = true;
     CFXS::CPU::EnableInterrupts();
@@ -202,17 +256,17 @@ __c_func __noreturn __used void __cfxs_reset() {
 ////////////////////////////////////////////////////////////////////////////////////////
 // Overcomplicated Default Vector Table
 
-__c_func __weak void __interrupt_NMI() {
+__weak void __interrupt_NMI() {
     CFXS_BREAK();
     CFXS::CPU::Reset();
 }
 
-__c_func __weak void __interrupt_HardFault() {
+__weak void __interrupt_HardFault() {
     CFXS_BREAK();
     CFXS::CPU::Reset();
 }
 
-__c_func __weak void __interrupt_Unhandled() {
+__weak void __interrupt_Unhandled() {
     CFXS_BREAK();
     CFXS::CPU::Reset();
 }

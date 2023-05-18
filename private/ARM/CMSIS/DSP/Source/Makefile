@@ -11,7 +11,7 @@ ARMAR :=  $(COMPILER_ROOT)/ARMCompiler6.18/bin/armar
 CFLAGS := -mcpu=cortex-m55 --target=arm-arm-none-eabi \
  -Wsign-compare \
  -Wdouble-promotion \
- -Ofast -ffast-math \
+ -Ofast \
  -DNDEBUG \
  -Wall -Wextra  -Werror \
  -fshort-enums -fshort-wchar \

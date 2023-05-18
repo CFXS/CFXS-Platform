@@ -17,8 +17,6 @@ file(GLOB_RECURSE headers CONFIGURE_DEPENDS
 )
 
 if("${CFXS_STARTUP_PLATFORM}" STREQUAL "TM4C129")
-  target_sources(${CMAKE_PROJECT_NAME} PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}/private/Platform/TM4C/TM4C_CoreInit.cpp")
-
   file(GLOB_RECURSE tm4c129_sources CONFIGURE_DEPENDS
     "${CMAKE_CURRENT_SOURCE_DIR}/private/Startup/TM4C129/*.cpp"
   )
@@ -59,6 +57,7 @@ set_source_files_properties(${asm_sources} PROPERTIES LANGUAGE ASM)
 add_library(${LIBRARY_NAME} ${asm_sources} ${sources} ${headers})
 target_include_directories(${LIBRARY_NAME} PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/include)
 target_include_directories(${LIBRARY_NAME} PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/src)
+target_include_directories(${LIBRARY_NAME} PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/debug)
 
 if(${CFXS_ARCH} STREQUAL "ARM")
   target_include_directories(${LIBRARY_NAME} PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/private/ARM/CMSIS/Core/Include)
@@ -73,7 +72,7 @@ elseif(${CFXS_STARTUP_PLATFORM} STREQUAL "STM32G4x3")
 endif()
 
 if(${CFXS_PLATFORM} STREQUAL "TM4C")
-  target_link_libraries(${LIBRARY_NAME} PRIVATE tm4c_driverlib)
+  target_link_libraries(${LIBRARY_NAME} PUBLIC tm4c_driverlib)
 else()
   message(FATAL_ERROR "CFXS_Platform unsupported platform")
 endif()
@@ -98,6 +97,9 @@ target_precompile_headers(
   <stdbool.h>
   <string.h>
   <new>
+  <eastl/array.h>
+  <eastl/vector.h>
+  <eastl/algorithm.h>
 )
 
 target_link_libraries(${LIBRARY_NAME} PRIVATE CFXS_Toolchain)
@@ -105,4 +107,9 @@ target_link_libraries(${LIBRARY_NAME} PRIVATE CFXS_Base)
 
 if(${CFXS_PLATFORM_NETWORK})
   target_link_libraries(${LIBRARY_NAME} PRIVATE lwip)
+
+  file(GLOB_RECURSE network_sources CONFIGURE_DEPENDS
+    "${CMAKE_CURRENT_SOURCE_DIR}/private/Network/*.cpp"
+  )
+  target_sources(${CMAKE_PROJECT_NAME} PUBLIC ${network_sources})
 endif()
