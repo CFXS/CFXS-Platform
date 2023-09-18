@@ -3,8 +3,14 @@ set(LIBRARY_NAME CFXS_Platform)
 # set(CMAKE_UNITY_BUILD true)
 # set(CMAKE_UNITY_BUILD_BATCH_SIZE 16)
 file(GLOB_RECURSE sources CONFIGURE_DEPENDS
-  "${CMAKE_CURRENT_SOURCE_DIR}/src/*.c"
-  "${CMAKE_CURRENT_SOURCE_DIR}/src/*.cpp"
+  "${CMAKE_CURRENT_SOURCE_DIR}/src/CPU/*.c"
+  "${CMAKE_CURRENT_SOURCE_DIR}/src/CPU/*.cpp"
+  "${CMAKE_CURRENT_SOURCE_DIR}/src/EASTL/*.c"
+  "${CMAKE_CURRENT_SOURCE_DIR}/src/EASTL/*.cpp"
+  "${CMAKE_CURRENT_SOURCE_DIR}/src/Heap/*.c"
+  "${CMAKE_CURRENT_SOURCE_DIR}/src/Heap/*.cpp"
+  "${CMAKE_CURRENT_SOURCE_DIR}/src/Print/*.c"
+  "${CMAKE_CURRENT_SOURCE_DIR}/src/Print/*.cpp"
 )
 
 file(GLOB_RECURSE asm_sources CONFIGURE_DEPENDS
@@ -54,7 +60,7 @@ endif()
 set_source_files_properties(${sources} PROPERTIES LANGUAGE CXX)
 set_source_files_properties(${asm_sources} PROPERTIES LANGUAGE ASM)
 
-add_library(${LIBRARY_NAME} ${asm_sources} ${sources} ${headers})
+add_library(${LIBRARY_NAME} ${asm_sources} ${sources}) # ${headers})
 target_include_directories(${LIBRARY_NAME} PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/include)
 target_include_directories(${LIBRARY_NAME} PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/src)
 target_include_directories(${LIBRARY_NAME} PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/debug)
@@ -69,6 +75,8 @@ if(${CFXS_STARTUP_PLATFORM} STREQUAL "STM32H7x3")
 elseif(${CFXS_STARTUP_PLATFORM} STREQUAL "STM32G4x3")
   target_include_directories(${LIBRARY_NAME} PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/private/Platform/STM32/STM32G4xx_HAL/include)
   target_include_directories(${LIBRARY_NAME} PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/private/Platform/STM32/STM32G4xx/Include)
+elseif(${CFXS_STARTUP_PLATFORM} STREQUAL "TM4C129")
+  target_include_directories(${LIBRARY_NAME} PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/private/Platform/TM4C)
 endif()
 
 if(${CFXS_PLATFORM} STREQUAL "TM4C")
