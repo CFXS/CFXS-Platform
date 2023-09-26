@@ -5,6 +5,26 @@
 namespace CFXS::CPU {
 
     template<auto INITIAL_SP, VoidFunction_t RESET, VoidFunction_t DEFAULT_HANDLER>
+    struct VectorTable_Minimal {
+        size_t _SP                      = (size_t)INITIAL_SP;
+        VoidFunction_t _Reset           = RESET;
+        VoidFunction_t _NMI             = DEFAULT_HANDLER;
+        VoidFunction_t _HardFault       = DEFAULT_HANDLER;
+        VoidFunction_t _MemManage_Fault = DEFAULT_HANDLER;
+        VoidFunction_t _BusFault        = DEFAULT_HANDLER;
+        VoidFunction_t _UsageFault      = DEFAULT_HANDLER;
+        VoidFunction_t __reserved0      = nullptr;
+        VoidFunction_t __reserved1      = nullptr;
+        VoidFunction_t __reserved2      = nullptr;
+        VoidFunction_t __reserved3      = nullptr;
+        VoidFunction_t _SVCall          = DEFAULT_HANDLER;
+        VoidFunction_t _DebugMonitor    = DEFAULT_HANDLER;
+        VoidFunction_t __reserved4      = nullptr;
+        VoidFunction_t _PendSV          = DEFAULT_HANDLER;
+        VoidFunction_t _SysTick         = DEFAULT_HANDLER;
+    };
+
+    template<auto INITIAL_SP, VoidFunction_t RESET, VoidFunction_t DEFAULT_HANDLER>
     struct VectorTable {
         size_t _SP                      = (size_t)INITIAL_SP;
         VoidFunction_t _Reset           = RESET;

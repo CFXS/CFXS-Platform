@@ -1,17 +1,17 @@
 // ---------------------------------------------------------------------
 // CFXS Framework Platform Module <https://github.com/CFXS/CFXS-Platform>
 // Copyright (C) 2022 | CFXS / Rihards Veips
-// 
+//
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
 // the Free Software Foundation, either version 3 of the License, or
 // (at your option) any later version.
-// 
+//
 // This program is distributed in the hope that it will be useful,
 // but WITHOUT ANY WARRANTY; without even the implied warranty of
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
 // GNU General Public License for more details.
-// 
+//
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>
 // ---------------------------------------------------------------------
@@ -40,11 +40,6 @@ namespace CFXS::CPU::Types {
         uint8_t CYCEVTEN : 1;    // Enables Cycle count event. Emits an event when the POSTCNT counter triggers it.
         uint8_t _reserved1 : 5;  // Reserved
         uint8_t NUMCOMP : 4;     // Number of comparators field.
-    };
-
-    /// DWT Cycle Count Register
-    struct Reg_DWT_CYCCNT {
-        uint32_t CYCCNT : 32; // Current PC Sampler Cycle Counter count value.
     };
 
 #pragma pack()

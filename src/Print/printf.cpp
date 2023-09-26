@@ -616,6 +616,7 @@ static T void_to(void* vp) {
 
 // internal vsnprintf
 static int _vsnprintf(out_fct_type out, char* buffer, const size_t maxlen, const char* format, va_list va) {
+    return 0;
     unsigned int flags, width, precision, n;
     size_t idx = 0U;
 
@@ -800,9 +801,10 @@ static int _vsnprintf(out_fct_type out, char* buffer, const size_t maxlen, const
                                          width,
                                          flags);
                     } else {
-                        const int value = (flags & FLAGS_CHAR) ? (char)va_arg(va, int) :
-                                                                 (flags & FLAGS_SHORT) ? (short int)va_arg(va, int) : va_arg(va, int);
-                        idx = _ntoa_long(out,
+                        const int value = (flags & FLAGS_CHAR)  ? (char)va_arg(va, int) :
+                                          (flags & FLAGS_SHORT) ? (short int)va_arg(va, int) :
+                                                                  va_arg(va, int);
+                        idx             = _ntoa_long(out,
                                          buffer,
                                          idx,
                                          maxlen,
@@ -823,11 +825,10 @@ static int _vsnprintf(out_fct_type out, char* buffer, const size_t maxlen, const
                     } else if (flags & FLAGS_LONG) {
                         idx = _ntoa_long(out, buffer, idx, maxlen, va_arg(va, unsigned long), false, base, precision, width, flags);
                     } else {
-                        const unsigned int value =
-                            (flags & FLAGS_CHAR) ?
-                                (unsigned char)va_arg(va, unsigned int) :
-                                (flags & FLAGS_SHORT) ? (unsigned short int)va_arg(va, unsigned int) : va_arg(va, unsigned int);
-                        idx = _ntoa_long(out, buffer, idx, maxlen, value, false, base, precision, width, flags);
+                        const unsigned int value = (flags & FLAGS_CHAR)  ? (unsigned char)va_arg(va, unsigned int) :
+                                                   (flags & FLAGS_SHORT) ? (unsigned short int)va_arg(va, unsigned int) :
+                                                                           va_arg(va, unsigned int);
+                        idx                      = _ntoa_long(out, buffer, idx, maxlen, value, false, base, precision, width, flags);
                     }
                 }
                 format++;

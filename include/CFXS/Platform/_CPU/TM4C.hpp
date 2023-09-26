@@ -29,7 +29,7 @@ namespace CFXS::CPU {
     }
 
     /// Reset CPU
-    static __always_inline __noreturn void Reset() {
+    static __noreturn void Reset() {
         HWREG(NVIC_APINT) = NVIC_APINT_VECTKEY | NVIC_APINT_SYSRESETREQ;
         while (1 < 2) {
         }
@@ -52,7 +52,7 @@ namespace CFXS::CPU {
     }
 
     /// Set interrupt handler
-    inline void SetInterruptHandler(int offset, CFXS::VoidFunction_t handler) {
+    static void SetInterruptHandler(int offset, CFXS::VoidFunction_t handler) {
         bool ien = AreInterruptsEnabled();
         if (ien)
             DisableInterrupts();

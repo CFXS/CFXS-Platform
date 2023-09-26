@@ -119,8 +119,8 @@ namespace CFXS::CPU {
     }
 
     /// Get cycle count (DWT_CYCCNT)
-    size_t inline GetCycleCount() {
-        return Registers::DWT::DWT_CYCCNT.CYCCNT;
+    volatile uint32_t inline GetCycleCount() {
+        return Registers::DWT::DWT_CYCCNT;
     }
 
 } // namespace CFXS::CPU

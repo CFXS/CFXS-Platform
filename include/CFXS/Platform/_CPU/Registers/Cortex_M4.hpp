@@ -41,7 +41,7 @@ namespace CFXS::CPU::Registers {
     namespace DWT {
 
         static auto& DWT_CTRL   = *reinterpret_cast<__rw Types::Reg_DWT_CTRL*>(0xE0001000);
-        static auto& DWT_CYCCNT = *reinterpret_cast<__rw Types::Reg_DWT_CYCCNT*>(0xE0001004);
+        static auto& DWT_CYCCNT = *reinterpret_cast<__rw uint32_t*>(0xE0001004);
 
     } // namespace DWT
 

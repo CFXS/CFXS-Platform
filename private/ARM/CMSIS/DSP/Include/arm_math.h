@@ -65,7 +65,7 @@
    *
    * \section using Using the Library
    *
-   * The library is released in source form. It is strongly advised to compile the library using -Ofast to
+   * The library is released in source form. It is strongly advised to compile the library using -O3 to
    * have the best performances.
    *
    * The library functions are declared in the public file `arm_math.h` which is placed in the `Include` folder.
@@ -156,70 +156,44 @@
    * The CMSIS-DSP is provided free of charge under the <a href="LICENSE.txt">Apache 2.0 License</a>.
    */
 
-
-
-
-
-
-
-
-
-
-
 /**
  * @defgroup groupExamples Examples
  */
 
-
-
-
-
 #ifndef _ARM_MATH_H
-#define _ARM_MATH_H
+    #define _ARM_MATH_H
 
+    #include "arm_math_types.h"
+    #include "arm_math_memory.h"
 
-#include "arm_math_types.h"
-#include "arm_math_memory.h"
+    #include "dsp/none.h"
+    #include "dsp/utils.h"
 
-#include "dsp/none.h"
-#include "dsp/utils.h"
+    #include "dsp/basic_math_functions.h"
+    #include "dsp/interpolation_functions.h"
+    #include "dsp/bayes_functions.h"
+    #include "dsp/matrix_functions.h"
+    #include "dsp/complex_math_functions.h"
+    #include "dsp/statistics_functions.h"
+    #include "dsp/controller_functions.h"
+    #include "dsp/support_functions.h"
+    #include "dsp/distance_functions.h"
+    #include "dsp/svm_functions.h"
+    #include "dsp/fast_math_functions.h"
+    #include "dsp/transform_functions.h"
+    #include "dsp/filtering_functions.h"
+    #include "dsp/quaternion_math_functions.h"
 
-#include "dsp/basic_math_functions.h"  
-#include "dsp/interpolation_functions.h"
-#include "dsp/bayes_functions.h"
-#include "dsp/matrix_functions.h"
-#include "dsp/complex_math_functions.h"
-#include "dsp/statistics_functions.h"
-#include "dsp/controller_functions.h"
-#include "dsp/support_functions.h"
-#include "dsp/distance_functions.h"
-#include "dsp/svm_functions.h"
-#include "dsp/fast_math_functions.h"
-#include "dsp/transform_functions.h"
-#include "dsp/filtering_functions.h"
-#include "dsp/quaternion_math_functions.h"
-
-
-
-#ifdef   __cplusplus
-extern "C"
-{
-#endif
-
-
-
+    #ifdef __cplusplus
+extern "C" {
+    #endif
 
 //#define TABLE_SPACING_Q31     0x400000
 //#define TABLE_SPACING_Q15     0x80
 
-
-
-
-
-#ifdef   __cplusplus
+    #ifdef __cplusplus
 }
-#endif
-
+    #endif
 
 #endif /* _ARM_MATH_H */
 
