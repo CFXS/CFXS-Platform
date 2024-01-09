@@ -17,6 +17,7 @@
 // ---------------------------------------------------------------------
 // [CFXS] //
 #pragma once
+#include <cstddef>
 
 namespace CFXS::CPU {
 

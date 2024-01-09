@@ -20,6 +20,7 @@
 
 #include <CFXS/Base/Time.hpp>
 #include <CFXS/Base/Function.hpp>
+#include <initializer_list>
 
 namespace CFXS {
 

@@ -18,6 +18,7 @@
 // [CFXS] //
 #include <CFXS/Base/Debug.hpp>
 #include <CFXS/Platform/Heap/MemoryManager.hpp>
+#include <EASTL/array.h>
 
 #ifndef CFXS_PLATFORM_MAX_HEAP_COUNT // [CFXSDEF:Platform] Max user heaps
     #define CFXS_PLATFORM_MAX_HEAP_COUNT 4

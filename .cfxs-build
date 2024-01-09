@@ -8,6 +8,7 @@ cfxs_platform:add_sources({
     "./src/**.c",
     "./src/**.cpp",
     "./src/**.S",
+    "!UDP_Socket.cpp",
 })
 
 if _G.CFXS_STARTUP_PLATFORM == "TM4C129X" then

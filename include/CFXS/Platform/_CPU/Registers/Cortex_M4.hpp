@@ -18,6 +18,7 @@
 // [CFXS] //
 #include "../../Types/Cortex_M/MPU.hpp"
 #include "../../Types/Cortex_M/DWT.hpp"
+#include <Compiler.hpp>
 
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wunused-variable"

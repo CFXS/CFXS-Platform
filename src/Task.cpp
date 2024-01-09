@@ -22,6 +22,7 @@
 #include <CFXS/Base/Time.hpp>
 
 #include <Task_Debug.hpp>
+#include <EASTL/array.h>
 
 namespace CFXS {
 

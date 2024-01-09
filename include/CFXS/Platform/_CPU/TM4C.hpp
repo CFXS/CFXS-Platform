@@ -21,6 +21,7 @@
 #include <inc/hw_types.h>
 #include "Cortex_M.hpp"
 #include <CFXS/Base/Debug.hpp>
+#include <cstring>
 
 namespace CFXS::CPU {
 

@@ -18,6 +18,9 @@
 // [CFXS] //
 #pragma once
 #include <utility>
+#include <Compiler.hpp>
+#include <cstring>
+#include <cstdint>
 
 //////////////////////////////////////////////////////////////////////////////////
 extern "C" void* mspace_malloc(void* msp, size_t bytes);
