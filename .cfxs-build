@@ -1,0 +1,99 @@
+printf("Load CFXS-Platform")
+assert(_G.CFXS_STARTUP_PLATFORM ~= nil, "_G.CFXS_STARTUP_PLATFORM not specified")
+assert(_G.CFXS_ARCH ~= nil, "_G.CFXS_ARCH not specified")
+
+cfxs_platform = create_library("CFXS Platform")
+
+cfxs_platform:add_sources({
+    "./src/**.c",
+    "./src/**.cpp",
+    "./src/**.S",
+})
+
+if _G.CFXS_STARTUP_PLATFORM == "TM4C129X" then
+    cfxs_platform:add_sources({
+        "./private/Startup/TM4C129/**.cpp",
+        "./private/Startup/TM4C129/**.S",
+    })
+end
+
+
+cfxs_platform:add_definitions("public", {
+    "EASTL_OPENSOURCE=1",
+    "EASTL_EXCEPTIONS_ENABLED=0",
+    "EASTL_RTTI_ENABLED=0",
+})
+
+cfxs_platform:add_compile_options("private", {
+    "-Wno-strict-aliasing"
+})
+
+cfxs_platform:add_include_paths("public", {
+    "./include",
+    "./debug"
+})
+cfxs_platform:add_include_paths("private", "./src")
+
+if _G.CFXS_ARCH == "ARM" then
+  target_include_directories(${LIBRARY_NAME} PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/private/ARM/CMSIS/Core/Include)
+end
+
+-- if(${CFXS_STARTUP_PLATFORM} STREQUAL "STM32H7x3")
+--   target_include_directories(${LIBRARY_NAME} PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/private/Platform/STM32/STM32H7xx_HAL/include)
+--   target_include_directories(${LIBRARY_NAME} PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/private/Platform/STM32/STM32H7xx/Include)
+-- elseif(${CFXS_STARTUP_PLATFORM} STREQUAL "STM32G4x3")
+--   target_include_directories(${LIBRARY_NAME} PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/private/Platform/STM32/STM32G4xx_HAL/include)
+--   target_include_directories(${LIBRARY_NAME} PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/private/Platform/STM32/STM32G4xx/Include)
+-- endif()
+
+-- elseif("${CFXS_STARTUP_PLATFORM}" STREQUAL "STM32H7x3")
+--   target_sources(${CMAKE_PROJECT_NAME} PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}/private/Startup/STM32H7x3.cpp")
+--   target_sources(${CMAKE_PROJECT_NAME} PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}/private/Platform/STM32/STM32H7x3_CoreInit.cpp")
+--   file(GLOB_RECURSE hal_sources CONFIGURE_DEPENDS
+--     "${CMAKE_CURRENT_SOURCE_DIR}/private/Platform/STM32/STM32H7xx_HAL/*.c"
+--   )
+--   file(GLOB_RECURSE hal_headers CONFIGURE_DEPENDS
+--     "${CMAKE_CURRENT_SOURCE_DIR}/private/Platform/STM32/STM32H7xx_HAL/*.h"
+--   )
+--   list(APPEND sources ${hal_sources})
+--   list(APPEND headers ${hal_headers})
+-- elseif("${CFXS_STARTUP_PLATFORM}" STREQUAL "STM32G4x3")
+--   target_sources(${CMAKE_PROJECT_NAME} PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}/private/Startup/STM32G4x3.cpp")
+--   target_sources(${CMAKE_PROJECT_NAME} PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}/private/Platform/STM32/STM32G4x3_CoreInit.cpp")
+--   file(GLOB_RECURSE hal_sources CONFIGURE_DEPENDS
+--     "${CMAKE_CURRENT_SOURCE_DIR}/private/Platform/STM32/STM32G4xx_HAL/*.c"
+--   )
+--   file(GLOB_RECURSE hal_headers CONFIGURE_DEPENDS
+--     "${CMAKE_CURRENT_SOURCE_DIR}/private/Platform/STM32/STM32G4xx_HAL/*.h"
+--   )
+--   list(APPEND sources ${hal_sources})
+--   list(APPEND headers ${hal_headers})
+-- else()
+--   message(FATAL_ERROR "CFXS-Platform unsupported CFXS_STARTUP_PLATFORM: [${CFXS_STARTUP_PLATFORM}]")
+-- endif()
+
+
+-- target_precompile_headers(
+--   ${LIBRARY_NAME}
+--   PRIVATE
+--   <stddef.h>
+--   <stdint.h>
+--   <stdbool.h>
+--   <string.h>
+--   <new>
+--   <eastl/array.h>
+--   <eastl/vector.h>
+--   <eastl/algorithm.h>
+-- )
+
+-- target_link_libraries(${LIBRARY_NAME} PRIVATE CFXS_Toolchain)
+-- target_link_libraries(${LIBRARY_NAME} PRIVATE CFXS_Base)
+
+-- if(${CFXS_PLATFORM_NETWORK})
+--   target_link_libraries(${LIBRARY_NAME} PRIVATE lwip)
+
+--   file(GLOB_RECURSE network_sources CONFIGURE_DEPENDS
+--     "${CMAKE_CURRENT_SOURCE_DIR}/private/Network/*.cpp"
+--   )
+--   target_sources(${CMAKE_PROJECT_NAME} PUBLIC ${network_sources})
+-- endif()
