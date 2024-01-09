@@ -16,6 +16,8 @@
 // along with this program.  If not, see <http://www.gnu.org/licenses/>
 // ---------------------------------------------------------------------
 // [CFXS] //
+#include <cstdint>
+#include <Compiler.hpp>
 #include <type_traits>
 #include <driverlib/sysctl.h>
 #include <driverlib/systick.h>
