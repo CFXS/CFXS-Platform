@@ -35,7 +35,7 @@ cfxs_platform:add_include_paths("public", {
 cfxs_platform:add_include_paths("private", "./src")
 
 if _G.CFXS_ARCH == "ARM" then
-  target_include_directories(${LIBRARY_NAME} PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/private/ARM/CMSIS/Core/Include)
+    cfxs_platform:add_include_paths("public", "./private/ARM/CMSIS/Core/Include")
 end
 
 -- if(${CFXS_STARTUP_PLATFORM} STREQUAL "STM32H7x3")
